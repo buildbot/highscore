@@ -18,7 +18,7 @@ from twisted.application import service
 from highscore.plugins import loader
 from highscore.db import connector as dbconnector
 from highscore.mq import connector as mqconnector
-from highscore.managers import users
+from highscore.managers import users, points
 
 class Highscore(service.MultiService):
 
@@ -44,6 +44,8 @@ class Highscore(service.MultiService):
 
         self.users = users.UsersManager(self, self.config)
         self.users.setServiceParent(self)
+        self.points = points.PointsManager(self, self.config)
+        self.points.setServiceParent(self)
 
         for plugin_name in self.config.get('plugins', []):
             loader.load_plugin(plugin_name, self,

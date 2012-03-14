@@ -13,6 +13,7 @@
 #
 # Copyright Buildbot Team Members
 
+import re
 import random
 from highscore.plugins import base
 from twisted.words.protocols import irc
@@ -92,15 +93,19 @@ class IrcProtocol(irc.IRCClient):
         log.msg("IRC bot joined to '%s'" % (self.channel,))
         self.highscore.mq.produce('irc.connected', {})
         self.in_channel = True
-        self.mq_consumer = self.highscore.mq.consume(
-                self.mqMessage, 'irc.outgoing')
+        cons = self.mq_consumers = []
+        cons.append(self.highscore.mq.consume(
+                self.mqOutgoingMessage, 'irc.outgoing'))
+        cons.append(self.highscore.mq.consume(
+                self.mqPointsAwarded, 'points.add.*'))
 
     def end(self):
         # we're not connected anymore; end interactions
         self.in_channel = False
         self.highscore.mq.produce('irc.disconnected', {})
-        if self.mq_consumer:
-            self.mq_consumer.stop_consuming()
+        if self.mq_consumers:
+            for cons in self.mq_consumers:
+                cons.stop_consuming()
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
@@ -118,9 +123,7 @@ class IrcProtocol(irc.IRCClient):
         if channel == self.channel:
             self.begin()
 
-    def mqMessage(self, routing_key, data):
-        self.msg(self.channel, data['message'])
-
+    plusplus_re = re.compile(r'^([^ ]*)\+\+(.*)')
     def privmsg(self, user, channel, msg):
         nick = user.split('!', 1)[0]
         if channel == self.nickname:
@@ -129,15 +132,68 @@ class IrcProtocol(irc.IRCClient):
             return
 
         if msg.startswith(self.nickname + ":"):
-            d = self.handle_message(nick, msg[len(self.nickname)+1:].strip())
+            d = self.handleMessage(nick, msg[len(self.nickname)+1:].strip())
             d.addErrback(log.msg, "while handling incoming IRC message")
+            return
+
+        # handle e.g., dustin++ for being so awesome
+        mo = self.plusplus_re.match(msg)
+        if mo:
+            d = self.addPoints(mo.group(1), 1, nick, mo.group(2))
+            d.addErrback(log.msg, "while adding points in response to IRC")
+            return
+
+    def msg(self, channel, message):
+        # wrap message into utf-8 if necessary
+        if isinstance(message, unicode):
+            message = message.encode('utf-8')
+        irc.IRCClient.msg(self, channel, message)
 
     @defer.inlineCallbacks
-    def handle_message(self, nick, msg):
+    def handleMessage(self, nick, msg):
+        userid, name = self.getUserIdAndName(nick)
+        self.highscore.mq.produce(
+                'irc.incoming',
+                dict(message=msg, nick=nick, display_name=name, userid=userid))
+
+    @defer.inlineCallbacks
+    def getUserIdAndName(self, nick):
         userid, name = yield self.highscore.users.getUserIdAndName(
                 matchInfo=[('irc_nick', nick)],
                 suggestedInfo=[('irc_nick', nick)],
                 suggestedDisplayName=nick)
-        self.highscore.mq.produce(
-                'irc.incoming',
-                dict(message=msg, nick=nick, display_name=name, userid=userid))
+        defer.returnValue((userid, name))
+
+    @defer.inlineCallbacks
+    def addPoints(self, dest_nick, points, source_nick, comments):
+        comments = comments.strip()
+        if not comments:
+            comments = "from %s in irc" % (source_nick,)
+        if source_nick == dest_nick and points > 0:
+            points = -5
+            comments = "for being greedy"
+        userid, _ = \
+                yield self.getUserIdAndName(dest_nick)
+        yield self.highscore.points.addPoints(userid=userid, points=points,
+                                              comments=comments)
+
+    # handle messages from other systems
+
+    def mqOutgoingMessage(self, routing_key, data):
+        self.msg(self.channel, data['message'])
+
+    def mqPointsAwarded(self, routing_key, data):
+        points = data['points']
+        if points == 0:
+            return
+        elif points > 0:
+            plural = 'point' if points == 1 else 'points'
+            msg = "%s gains %s %s %s" % (data['display_name'], points,
+                                         plural, data['comments'])
+        else:
+            points = -points
+            plural = 'point' if points == 1 else 'points'
+            msg = "%s loses %s %s %s" % (data['display_name'], points,
+                                         plural, data['comments'])
+        self.msg(self.channel, msg)
+

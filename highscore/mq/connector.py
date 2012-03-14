@@ -24,7 +24,7 @@ class MQConnector(service.MultiService):
 
     def __init__(self, highscore, config):
         service.MultiService.__init__(self)
-        self.setName('mq')
+        self.setName('highscore.mq')
         self.highscore = highscore
         self.config = config
         self.impl = None # set in setup

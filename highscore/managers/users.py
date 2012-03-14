@@ -96,3 +96,17 @@ class UsersManager(service.MultiService):
 
             return userid, suggestedDisplayName
         return self.highscore.db.pool.do(thd)
+
+    def getDisplayName(self, userid):
+        def thd(conn):
+            usersTbl = self.highscore.db.model.users
+            r = conn.execute(sa.select([ usersTbl.c.display_name ],
+                usersTbl.c.id == userid))
+            row = r.fetchone()
+            r.close()
+            if row:
+                return row.display_name
+            else:
+                return '(unknown)'
+        return self.highscore.db.pool.do(thd)
+

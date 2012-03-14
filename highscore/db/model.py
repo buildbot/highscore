@@ -57,6 +57,15 @@ class Model(object):
             users_info.c.value,
             unique=True)
 
+    points = sa.Table('points', metadata,
+        sa.Column('pointsid', sa.Integer, primary_key=True),
+        sa.Column('userid', sa.Integer, sa.ForeignKey('users.id')),
+        sa.Column('when', sa.DateTime, nullable=False),
+        sa.Column('points', sa.Integer, nullable=False),
+        sa.Column('comments', sa.String, nullable=False),
+    )
+    sa.Index('points', points.c.userid)
+
     #
     # migration support
     #
