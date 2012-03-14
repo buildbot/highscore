@@ -13,10 +13,12 @@
 #
 # Copyright Buildbot Team Members
 
+from twisted.internet import defer, task
 from twisted.application import service
 from highscore.plugins import loader
 from highscore.db import connector as dbconnector
 from highscore.mq import connector as mqconnector
+from highscore.users import connector as usersconnector
 
 class Highscore(service.MultiService):
 
@@ -24,10 +26,35 @@ class Highscore(service.MultiService):
         service.MultiService.__init__(self)
         self.setName("highscore")
         self.config = config
+        self.is_set_up = False
 
-        self.db = dbconnector.DBConnector(self, config.get('db', {}))
-        self.mq = mqconnector.MQConnector(self, config.get('mq', {}))
+    @defer.inlineCallbacks
+    def setup(self):
+        if self.is_set_up:
+            return
+        self.is_set_up = True
 
-        for plugin_name in config.get('plugins', []):
+        self.db = dbconnector.DBConnector(self, self.config.get('db', {}))
+        self.db.setServiceParent(self)
+        yield self.db.setup()
+
+        self.mq = mqconnector.MQConnector(self, self.config.get('mq', {}))
+        self.mq.setServiceParent(self)
+        self.mq.setup()
+
+        self.users = usersconnector.UsersConnector(self, self.config)
+        self.users.setServiceParent(self)
+        #self.users.setup()
+
+        for plugin_name in self.config.get('plugins', []):
             loader.load_plugin(plugin_name, self,
-                    config['plugins'][plugin_name])
+                    self.config['plugins'][plugin_name])
+
+    def startService(self):
+        # we want setup to complete *before* child services are initialized,
+        # but startService is not ordinarily an async method.  So we just start
+        # setting things up, and add child services once the setup is complete
+        d = self.setup()
+        @d.addCallback
+        def chain(_):
+            service.MultiService.startService(self)

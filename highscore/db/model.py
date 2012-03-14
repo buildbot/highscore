@@ -63,7 +63,13 @@ class Model(object):
         # methods perform similar wrapping functions to what is done by the API
         # functions, but without disposing of the engine.
         def thd(engine):
-            schema = migrate.versioning.schema.ControlledSchema(engine,
+            try:
+                schema = migrate.versioning.schema.ControlledSchema(engine,
+                    self.repo_path)
+            except exceptions.DatabaseNotControlledError:
+                migrate.versioning.schema.ControlledSchema.create(engine,
+                        self.repo_path, None)
+                schema = migrate.versioning.schema.ControlledSchema(engine,
                     self.repo_path)
             changeset = schema.changeset(None)
             for version, change in changeset:
