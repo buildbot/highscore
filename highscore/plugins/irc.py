@@ -16,7 +16,7 @@
 import random
 from highscore.plugins import base
 from twisted.words.protocols import irc
-from twisted.internet import reactor, protocol
+from twisted.internet import reactor, protocol, defer
 from twisted.python import log
 from twisted.application import internet
 
@@ -122,15 +122,22 @@ class IrcProtocol(irc.IRCClient):
         self.msg(self.channel, data['message'])
 
     def privmsg(self, user, channel, msg):
-        user = user.split('!', 1)[0]
+        nick = user.split('!', 1)[0]
         if channel == self.nickname:
             # private message
             self.msg(self.channel, "let's keep it in channel, k?")
             return
 
         if msg.startswith(self.nickname + ":"):
-            self.handle_message(user, msg[len(self.nickname)+1:].strip())
+            d = self.handle_message(nick, msg[len(self.nickname)+1:].strip())
+            d.addErrback(log.msg, "while handling incoming IRC message")
 
-    def handle_message(self, user, msg):
+    @defer.inlineCallbacks
+    def handle_message(self, nick, msg):
+        userid, name = yield self.highscore.users.getUserIdAndName(
+                matchInfo=[('irc_nick', nick)],
+                suggestedInfo=[('irc_nick', nick)],
+                suggestedDisplayName=nick)
         self.highscore.mq.produce(
-                'irc.incoming', dict(message=msg, user=user))
+                'irc.incoming',
+                dict(message=msg, nick=nick, display_name=name, userid=userid))
