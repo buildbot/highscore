@@ -32,7 +32,7 @@ class WWWService(service.MultiService):
 
         root = static.Data('placeholder', 'text/plain')
         root.putChild('', resource.HighscoreResource(self.highscore))
-        #root.putChild('user', resource.UserScoresResource(self.highscore))
+        root.putChild('user', resource.UserScoresResource(self.highscore))
 
         self.site = server.Site(root)
 

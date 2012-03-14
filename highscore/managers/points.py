@@ -20,6 +20,9 @@ from twisted.application import service
 
 class PointsManager(service.MultiService):
 
+    HALFLIFE = 3600*24*30 # points lose half their value after a month
+    MAX_AGE = HALFLIFE * 4 # points disappear after losing 15/16th of their value
+
     def __init__(self, highscore, config):
         service.MultiService.__init__(self)
         self.setName('highscore.points')
@@ -45,14 +48,25 @@ class PointsManager(service.MultiService):
                         display_name=display_name, points=points,
                         comments=comments))
 
+    def getUserPoints(self, userid):
+        def thd(conn):
+            pointsTbl = self.highscore.db.model.points
+            r = conn.execute(sa.select(
+                [ pointsTbl.c.when, pointsTbl.c.points, pointsTbl.c.comments ],
+                (pointsTbl.c.userid == userid) &
+                (pointsTbl.c.when > time.time() - self.MAX_AGE),
+                order_by=[ pointsTbl.c.when ]))
+            return [ dict(when=row.when, points=row.points,
+                          comments=row.comments)
+                     for row in r ]
+        return self.highscore.db.pool.do(thd)
+
     def getHighscores(self):
         def thd(conn):
             pointsTbl = self.highscore.db.model.points
             usersTbl = self.highscore.db.model.users
 
             now = time.time()
-            HALFLIFE = 3600*24*30 # points lose half their value after a month
-            MAX_AGE = HALFLIFE * 4 # points disappear after losing 15/16th of their value
 
             # we want to use exponential decay of points, and sqlite doesn't
             # support this, so we just download the whole list of (recent)
@@ -60,7 +74,7 @@ class PointsManager(service.MultiService):
             r = conn.execute(sa.select([ usersTbl.c.display_name,
                     pointsTbl.c.userid, pointsTbl.c.when, pointsTbl.c.points ],
                 (usersTbl.c.id == pointsTbl.c.userid) &
-                (pointsTbl.c.when > now - MAX_AGE)))
+                (pointsTbl.c.when > now - self.MAX_AGE)))
 
             user_points = {}
             user_names = {}
@@ -68,7 +82,7 @@ class PointsManager(service.MultiService):
                 if row.userid not in user_names:
                     user_names[row.userid] = row.display_name
                     user_points[row.userid] = 0
-                mult = 0.5 ** ((now - row.when) / HALFLIFE)
+                mult = 0.5 ** ((now - row.when) / self.HALFLIFE)
                 user_points[row.userid] += mult * row.points
 
             # sort highest scores

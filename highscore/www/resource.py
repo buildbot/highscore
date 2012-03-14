@@ -13,6 +13,7 @@
 #
 # Copyright Buildbot Team Members
 
+import time
 from twisted.python import log
 from twisted.internet import defer
 from twisted.web import resource, server
@@ -38,7 +39,7 @@ html_template = """\
   <!-- Mobile viewport optimized: h5bp.com/viewport -->
   <meta name="viewport" content="width=device-width">
 
-  <link rel="stylesheet" href="css/style.css">
+  <!-- <link rel="stylesheet" href="%(root)s/css/style.css"> -->
 
 </head>
 <body>
@@ -103,7 +104,35 @@ class HighscoreResource(Resource):
 
         scores_html = []
         for sc in high_scores:
-            scores_html.append('<li>%s (%d points)' %
-                    (sc['display_name'], round(0.5 + sc['points'])))
+            scores_html.append('<li><a href="user/%s">%s</a> (%d points)' %
+                (sc['userid'], sc['display_name'], round(0.5 + sc['points'])))
         content = "<ul>%s</ul>" % ("\n".join(scores_html),)
-        defer.returnValue(html_template % dict(content=content))
+        defer.returnValue(html_template % dict(content=content, root=''))
+
+class UserScoresResource(Resource):
+
+    def getChild(self, name, request):
+        try:
+            userid = int(name)
+        except:
+            return Resource.getChild(self, name, request)
+        return UserScoreResource(self.highscore, userid)
+
+class UserScoreResource(Resource):
+
+    def __init__(self, highscore, userid):
+        Resource.__init__(self, highscore)
+        self.highscore = highscore
+        self.userid = userid
+
+    @defer.inlineCallbacks
+    def content(self, request):
+        points = yield self.highscore.points.getUserPoints(self.userid)
+
+        scores_html = []
+        for pt in points:
+            scores_html.append('<li>%s %d points %s' % (
+                time.asctime(time.gmtime(pt['when'])),
+                pt['points'], pt['comments']))
+        content = "<ul>%s</ul>" % ("\n".join(scores_html),)
+        defer.returnValue(html_template % dict(content=content, root='../'))

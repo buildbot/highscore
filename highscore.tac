@@ -13,5 +13,8 @@ h = Highscore(dict(
     mq=dict(
         debug=True,
     ),
+    www=dict(
+        port=8010,
+    ),
 ))
 h.setServiceParent(application)
