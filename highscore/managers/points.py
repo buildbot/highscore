@@ -13,8 +13,8 @@
 #
 # Copyright Buildbot Team Members
 
+import time
 from twisted.internet import defer
-from datetime import datetime
 from twisted.application import service
 
 class PointsManager(service.MultiService):
@@ -31,7 +31,7 @@ class PointsManager(service.MultiService):
             tbl = self.highscore.db.model.points
             r = conn.execute(tbl.insert(), dict(
                 userid=userid,
-                when=datetime.utcnow(),
+                when=time.time(),
                 points=points,
                 comments=comments))
             pointsid = r.inserted_primary_key[0]

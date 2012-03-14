@@ -60,7 +60,7 @@ class Model(object):
     points = sa.Table('points', metadata,
         sa.Column('pointsid', sa.Integer, primary_key=True),
         sa.Column('userid', sa.Integer, sa.ForeignKey('users.id')),
-        sa.Column('when', sa.DateTime, nullable=False),
+        sa.Column('when', sa.Integer, nullable=False), # epoch time
         sa.Column('points', sa.Integer, nullable=False),
         sa.Column('comments', sa.String, nullable=False),
     )

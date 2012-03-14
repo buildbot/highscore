@@ -26,7 +26,7 @@ def upgrade(migrate_engine):
 
     points = sa.Table('points', metadata,
         sa.Column('userid', sa.Integer, sa.ForeignKey('users.id')),
-        sa.Column('when', sa.DateTime, nullable=False),
+        sa.Column('when', sa.Integer, nullable=False),
         sa.Column('points', sa.Integer, nullable=False),
         sa.Column('comments', sa.String, nullable=False),
     )
