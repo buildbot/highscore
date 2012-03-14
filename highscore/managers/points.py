@@ -51,12 +51,17 @@ class PointsManager(service.MultiService):
     def getUserPoints(self, userid):
         def thd(conn):
             pointsTbl = self.highscore.db.model.points
+            now = time.time()
+
             r = conn.execute(sa.select(
                 [ pointsTbl.c.when, pointsTbl.c.points, pointsTbl.c.comments ],
                 (pointsTbl.c.userid == userid) &
-                (pointsTbl.c.when > time.time() - self.MAX_AGE),
+                (pointsTbl.c.when > now - self.MAX_AGE),
                 order_by=[ pointsTbl.c.when ]))
-            return [ dict(when=row.when, points=row.points,
+            def age_points(row):
+                mult = 0.5 ** ((now - row.when) / self.HALFLIFE)
+                return mult * row.points
+            return [ dict(when=row.when, points=age_points(row),
                           comments=row.comments)
                      for row in r ]
         return self.highscore.db.pool.do(thd)
