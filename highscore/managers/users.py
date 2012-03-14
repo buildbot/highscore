@@ -16,7 +16,7 @@
 import sqlalchemy as sa
 from twisted.application import service
 
-class UsersConnector(service.MultiService):
+class UsersManager(service.MultiService):
 
     def __init__(self, highscore, config):
         service.MultiService.__init__(self)

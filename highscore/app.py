@@ -13,12 +13,12 @@
 #
 # Copyright Buildbot Team Members
 
-from twisted.internet import defer, task
+from twisted.internet import defer
 from twisted.application import service
 from highscore.plugins import loader
 from highscore.db import connector as dbconnector
 from highscore.mq import connector as mqconnector
-from highscore.users import connector as usersconnector
+from highscore.managers import users
 
 class Highscore(service.MultiService):
 
@@ -42,9 +42,8 @@ class Highscore(service.MultiService):
         self.mq.setServiceParent(self)
         self.mq.setup()
 
-        self.users = usersconnector.UsersConnector(self, self.config)
+        self.users = users.UsersManager(self, self.config)
         self.users.setServiceParent(self)
-        #self.users.setup()
 
         for plugin_name in self.config.get('plugins', []):
             loader.load_plugin(plugin_name, self,
