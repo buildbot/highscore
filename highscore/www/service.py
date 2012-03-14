@@ -31,8 +31,8 @@ class WWWService(service.MultiService):
         self.site_public_html = None
 
         root = static.Data('placeholder', 'text/plain')
-        root.putChild('', resource.HighscoreResource(self.highscore))
-        root.putChild('user', resource.UserScoresResource(self.highscore))
+        root.putChild('', resource.HighscoresResource(self.highscore))
+        root.putChild('user', resource.UsersPointsResource(self.highscore))
 
         self.site = server.Site(root)
 

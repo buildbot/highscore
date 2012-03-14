@@ -14,53 +14,9 @@
 # Copyright Buildbot Team Members
 
 import time
-from twisted.python import log
+from twisted.python import log, util
 from twisted.internet import defer
-from twisted.web import resource, server
-
-html_template = """\
-<!doctype html>
-<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
-<!-- Consider adding a manifest.appcache: h5bp.com/d/Offline -->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-
-  <!-- Use the .htaccess and remove these lines to avoid edge case issues.
-       More info: h5bp.com/i/378 -->
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-
-  <title></title>
-  <meta name="description" content="High Scores">
-
-  <!-- Mobile viewport optimized: h5bp.com/viewport -->
-  <meta name="viewport" content="width=device-width">
-
-  <!-- <link rel="stylesheet" href="%(root)s/css/style.css"> -->
-
-</head>
-<body>
-  <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you support IE 6.
-       chromium.org/developers/how-tos/chrome-frame-getting-started -->
-  <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
-  <header>
-
-  </header>
-  <div role="main">
-%(content)s
-  </div>
-  <footer>
-
-  </footer>
-
-
-  <!-- JavaScript at the bottom for fast page loading -->
-</body>
-</html>
-"""
+from twisted.web import resource, server, template
 
 class Resource(resource.Resource):
 
@@ -96,29 +52,92 @@ class Resource(resource.Resource):
         return server.NOT_DONE_YET
 
 
-class HighscoreResource(Resource):
+class HighscoresElement(template.Element):
+
+    loader = template.XMLFile(util.sibpath(__file__, 'templates/page.xhtml'))
+
+    def __init__(self, highscore, scores):
+        template.Element.__init__(self)
+        self.highscore = highscore
+        self.scores = scores
+
+    @template.renderer
+    def title(self, request, tag):
+        return tag("High Scores")
+
+    @template.renderer
+    def main(self, request, tag):
+        ul = template.tags.ul()
+        tag(ul, class_='highscore')
+        for sc in self.scores:
+            li = template.tags.li()
+            li(template.tags.a(sc['display_name'],
+                                class_="display_name",
+                                href="user/%s" % (sc['userid'],)))
+            li(" ")
+            li(template.tags.span(str(round(0.5 + sc['points'])),
+                                    class_="points"))
+            ul(li)
+        return ul
+
+
+class HighscoresResource(Resource):
 
     @defer.inlineCallbacks
     def content(self, request):
-        high_scores = yield self.highscore.points.getHighscores()
+        scores = yield self.highscore.points.getHighscores()
 
-        scores_html = []
-        for sc in high_scores:
-            scores_html.append('<li><a href="user/%s">%s</a> (%d points)' %
-                (sc['userid'], sc['display_name'], round(0.5 + sc['points'])))
-        content = "<ul>%s</ul>" % ("\n".join(scores_html),)
-        defer.returnValue(html_template % dict(content=content, root=''))
+        request.write('<!doctype html>\n')
+        defer.returnValue((yield template.flattenString(request,
+                                HighscoresElement(self.highscore, scores))))
 
-class UserScoresResource(Resource):
+
+class UsersPointsResource(Resource):
 
     def getChild(self, name, request):
         try:
             userid = int(name)
         except:
             return Resource.getChild(self, name, request)
-        return UserScoreResource(self.highscore, userid)
+        return UserPointsResource(self.highscore, userid)
 
-class UserScoreResource(Resource):
+
+class UserPointsElement(template.Element):
+
+    loader = template.XMLFile(util.sibpath(__file__, 'templates/page.xhtml'))
+
+    def __init__(self, highscore, display_name, points):
+        template.Element.__init__(self)
+        self.highscore = highscore
+        self.display_name = display_name
+        self.points = points
+
+    @template.renderer
+    def title(self, request, tag):
+        return tag("Points for %s" % (self.display_name,))
+
+    @template.renderer
+    def main(self, request, tag):
+        ul = template.tags.ul()
+        tag(ul, class_='points')
+        for pt in self.points:
+            li = template.tags.li()
+            li(template.tags.span(
+                time.asctime(time.gmtime(pt['when'])),
+                class_="when"))
+            li(" ")
+            li(template.tags.span(
+                str(pt['points']),
+                class_="points"))
+            li(" ")
+            li(template.tags.span(
+                pt['comments'],
+                class_="comments"))
+            ul(li)
+        return ul
+
+
+class UserPointsResource(Resource):
 
     def __init__(self, highscore, userid):
         Resource.__init__(self, highscore)
@@ -128,11 +147,9 @@ class UserScoreResource(Resource):
     @defer.inlineCallbacks
     def content(self, request):
         points = yield self.highscore.points.getUserPoints(self.userid)
+        display_name = yield self.highscore.users.getDisplayName(self.userid)
 
-        scores_html = []
-        for pt in points:
-            scores_html.append('<li>%s %d points %s' % (
-                time.asctime(time.gmtime(pt['when'])),
-                pt['points'], pt['comments']))
-        content = "<ul>%s</ul>" % ("\n".join(scores_html),)
-        defer.returnValue(html_template % dict(content=content, root='../'))
+        request.write('<!doctype html>\n')
+        defer.returnValue((yield template.flattenString(request,
+                                UserPointsElement(self.highscore,
+                                                display_name, points))))
