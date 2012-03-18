@@ -71,9 +71,10 @@ class HighscoresElement(template.Element):
         tag(ul, class_='highscore')
         for sc in self.scores:
             li = template.tags.li()
+            url = self.highscore.www.makeUrl('user', sc['userid'])
             li(template.tags.a(sc['display_name'],
                                 class_="display_name",
-                                href="user/%s" % (sc['userid'],)))
+                                href=url))
             li(" ")
             li(template.tags.span(str(round(0.5 + sc['points'])),
                                     class_="points"))

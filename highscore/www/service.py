@@ -13,6 +13,7 @@
 #
 # Copyright Buildbot Team Members
 
+import urllib
 from twisted.application import strports, service
 from twisted.web import server, static
 from highscore.www import resource
@@ -40,3 +41,11 @@ class WWWService(service.MultiService):
         port = "tcp:%d" % self.port if type(self.port) == int else self.port
         self.port_service = strports.service(port, self.site)
         self.port_service.setServiceParent(self)
+
+    def makeUrl(self, *args):
+        base = self.config.get('base_url')
+        if not base:
+            base = 'http://localhost:%d' % (self.port,)
+        if base[-1] != '/':
+            base += '/'
+        return base + '/'.join(urllib.quote(str(arg)) for arg in args)
