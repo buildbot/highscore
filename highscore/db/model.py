@@ -58,13 +58,13 @@ class Model(object):
             unique=True)
 
     points = sa.Table('points', metadata,
-        sa.Column('pointsid', sa.Integer, primary_key=True),
+        sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('userid', sa.Integer, sa.ForeignKey('users.id')),
         sa.Column('when', sa.Integer, nullable=False), # epoch time
         sa.Column('points', sa.Integer, nullable=False),
         sa.Column('comments', sa.String, nullable=False),
     )
-    sa.Index('points', points.c.userid)
+    sa.Index('points_userid', points.c.userid)
 
     #
     # migration support

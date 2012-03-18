@@ -38,13 +38,13 @@ class PointsManager(service.MultiService):
                 when=time.time(),
                 points=points,
                 comments=comments))
-            pointsid = r.inserted_primary_key[0]
-            return pointsid
-        pointsid = yield self.highscore.db.pool.do(thd)
+            id = r.inserted_primary_key[0]
+            return id
+        id = yield self.highscore.db.pool.do(thd)
 
         display_name = yield self.highscore.users.getDisplayName(userid)
         self.highscore.mq.produce('points.add.%d' % userid,
-                dict(pointsid=pointsid, userid=userid,
+                dict(pointsid=id, userid=userid,
                         display_name=display_name, points=points,
                         comments=comments))
 
