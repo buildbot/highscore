@@ -13,19 +13,19 @@
 #
 # Copyright Buildbot Team Members
 
-from distutils.core import setup
+from highscore.plugins import base
+from highscore.plugins.github import listener
+from highscore.plugins.github import api
 
-setup(
-    name='highscore',
-    version='1.0',
-    description='High-score tracking for projects',
-    author='Dustin J. Mitchell',
-    author_email='dustin@cs.uchicago.edu',
-    packages=['highscore'],
-    install_requires=[
-        'twisted >= 11.0.0',
-        'sqlalchemy >= 0.7.2',
-        'sqlalchemy-migrate == 0.7.2',
-        'pyopenssl',
-    ],
-)
+class Plugin(base.Plugin):
+
+    def __init__(self, highscore, config):
+        base.Plugin.__init__(self, highscore, config)
+
+        # turn on the listener and set it as our www attribute
+        self.listener = listener.GithubHookListener(self, highscore, config)
+        self.listener.setServiceParent(self)
+        self.www = self.listener.www
+
+        self.api = api.GithubApi(config.get('username'),
+                                 config.get('password'))
