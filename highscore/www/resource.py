@@ -51,6 +51,9 @@ class Resource(resource.Resource):
         d.addCallbacks(ok, fail)
         return server.NOT_DONE_YET
 
+    def content(self, request):
+        return ''
+
 
 class HighscoresElement(template.Element):
 
@@ -164,6 +167,6 @@ class PluginsResource(Resource):
     def getChild(self, name, request):
         if name in self.highscore.plugins:
             plugin = self.highscore.plugins[name]
-            if hasattr(plugin, 'www'):
+            if plugin.www:
                 return plugin.www
         return Resource.getChild(self, name, request)
