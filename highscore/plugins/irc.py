@@ -85,6 +85,7 @@ class IrcProtocol(irc.IRCClient):
         self.channel = self.config['channel']
         self.nickname = self.config['nickname']
         self.in_channel = False
+        self.mq_consumers = []
 
     def begin(self):
         # we're initialized; begin interacting
@@ -103,9 +104,9 @@ class IrcProtocol(irc.IRCClient):
         # we're not connected anymore; end interactions
         self.in_channel = False
         self.highscore.mq.produce('irc.disconnected', {})
-        if self.mq_consumers:
-            for cons in self.mq_consumers:
-                cons.stop_consuming()
+        for cons in self.mq_consumers:
+            cons.stop_consuming()
+        self.mq_consumers = []
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
