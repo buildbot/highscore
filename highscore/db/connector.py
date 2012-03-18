@@ -13,6 +13,8 @@
 #
 # Copyright Buildbot Team Members
 
+import sqlalchemy as sa
+import json
 from twisted.python import log
 from twisted.application import service
 from highscore.db import enginestrategy, pool, model
@@ -41,3 +43,36 @@ class DBConnector(service.MultiService):
                 log.msg("upgrading database")
                 return self.model.upgrade()
         return d
+
+    # state convenience methods
+    #
+    # Note that state handling is *not* parallelizable!
+
+    def getState(self, name):
+        def thd(conn):
+            tbl = self.model.state
+            res = conn.execute(
+                sa.select([ tbl.c.value ], tbl.c.name == name))
+            return res.fetchone()
+        d = self.pool.do(thd)
+        @d.addCallback
+        def un_json(row):
+            if row:
+                return json.loads(row.value)
+        return d
+
+    def setState(self, name, value):
+        value_json = json.dumps(value)
+        def thd(conn):
+            res = conn.execute(
+                self.model.state.update(
+                    self.model.state.c.name == name),
+                    value=value_json)
+            if res.rowcount:
+                return
+            conn.execute(
+                self.model.state.insert(),
+                name=name,
+                value=value_json)
+        return self.pool.do(thd)
+

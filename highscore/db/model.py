@@ -66,6 +66,12 @@ class Model(object):
     )
     sa.Index('points_userid', points.c.userid)
 
+    # storage for arbitrary small state
+    state = sa.Table('state', metadata,
+        sa.Column('name', sa.String, primary_key=True),
+        sa.Column('value', sa.String, nullable=False),
+    )
+
     #
     # migration support
     #
