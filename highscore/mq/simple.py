@@ -29,7 +29,7 @@ class SimpleMQ(base.MQBase):
 
     def produce(self, routing_key, data):
         if self.debug:
-            log.msg("MSG: %s\n%s" % (routing_key, pprint.pformat(data)))
+            log.msg("MSG: %s\n%s" % (routing_key, pprint.pformat(data)), system='mq')
         for qref in self.qrefs:
             if qref.matches(routing_key):
                 qref.invoke(routing_key, data)
