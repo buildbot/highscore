@@ -52,9 +52,10 @@ class Highscore(service.MultiService):
         self.www = wwwservice.WWWService(self, self.config.get('www', {}))
         self.www.setServiceParent(self)
 
+        self.plugins = {}
         for plugin_name in self.config.get('plugins', []):
-            loader.load_plugin(plugin_name, self,
-                    self.config['plugins'][plugin_name])
+            self.plugins[plugin_name] = loader.load_plugin(
+                plugin_name, self, self.config['plugins'][plugin_name])
 
     def startService(self):
         # we want setup to complete *before* child services are initialized,

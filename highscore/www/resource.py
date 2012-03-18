@@ -153,3 +153,16 @@ class UserPointsResource(Resource):
         defer.returnValue((yield template.flattenString(request,
                                 UserPointsElement(self.highscore,
                                                 display_name, points))))
+
+class PluginsResource(Resource):
+
+    def __init__(self, highscore):
+        Resource.__init__(self, highscore)
+        self.highscore = highscore
+
+    def getChild(self, name, request):
+        if name in self.highscore.plugins:
+            plugin = self.highscore.plugins[name]
+            if hasattr(plugin, 'www'):
+                return plugin.www
+        return Resource.getChild(self, name, request)

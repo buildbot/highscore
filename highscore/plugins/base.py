@@ -21,3 +21,7 @@ class Plugin(service.MultiService):
         service.MultiService.__init__(self)
         self.highscore = highscore
         self.config = config
+
+        # set this to a highscore.www.resource.Resource instance
+        # to get www service at /plugins/$name
+        self.www = None
