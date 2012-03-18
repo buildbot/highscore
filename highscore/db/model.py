@@ -47,7 +47,7 @@ class Model(object):
     )
 
     users_info = sa.Table('users_info', metadata,
-        sa.Column('userid', sa.Integer, sa.ForeignKey('users.id')),
+        sa.Column('id', sa.Integer, sa.ForeignKey('users.id')),
         sa.Column('attrtypeid', sa.Integer,
                     sa.ForeignKey('user_attr_types.id')),
         sa.Column('value', sa.String, nullable=False),
