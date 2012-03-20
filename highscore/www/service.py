@@ -26,7 +26,7 @@ class WWWService(service.MultiService):
         self.highscore = highscore
         self.config = config
 
-        self.port = config.get('port', 8080)
+        self.port = config.www.get('port', 8080)
         self.port_service = None
         self.site = None
         self.site_public_html = None
@@ -43,7 +43,7 @@ class WWWService(service.MultiService):
         self.port_service.setServiceParent(self)
 
     def makeUrl(self, *args):
-        base = self.config.get('base_url')
+        base = self.config.www.get('base_url')
         if not base:
             base = 'http://localhost:%d' % (self.port,)
         if base[-1] != '/':

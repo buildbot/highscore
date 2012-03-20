@@ -33,7 +33,8 @@ class GithubHookListener(service.Service):
         self.plugin = plugin
         self.highscore = highscore
         self.config = config
-        self.listeningEvents = config.get('events', self.known_events)
+        self.listeningEvents = config.plugins.github.get('events',
+                                                    self.known_events)
 
         # set in startService
         self.hookToken = None

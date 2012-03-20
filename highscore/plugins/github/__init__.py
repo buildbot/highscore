@@ -32,7 +32,7 @@ class Plugin(base.Plugin):
         self.www = self.listener.www
 
         # set up the Github API for general use
-        oauth2_token = config.get('oauth2_token')
+        oauth2_token = config.plugins.github.oauth2_token
         if not oauth2_token:
             log.msg('No oauth2_token specified; run get-github-token.py',
                     system='github')

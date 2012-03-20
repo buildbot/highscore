@@ -34,10 +34,10 @@ class Plugin(base.Plugin):
         base.Plugin.__init__(self, highscore, config)
 
         self.factory = IrcFactory(highscore, config)
-        hostname = self.config.get('hostname')
+        hostname = self.config.plugins.irc.get('hostname')
         assert hostname, 'no irc hostname supplied'
-        port = self.config.get('port', 6667)
-        if self.config.get('useSSL'):
+        port = self.config.plugins.irc.get('port', 6667)
+        if self.config.plugins.irc.get('useSSL'):
             if not have_ssl:
                 raise RuntimeError("useSSL requires PyOpenSSL")
             cf = ssl.ClientContextFactory()
@@ -82,8 +82,8 @@ class IrcProtocol(irc.IRCClient):
     def __init__(self, highscore, config):
         self.highscore = highscore
         self.config = config
-        self.channel = self.config['channel']
-        self.nickname = self.config['nickname']
+        self.channel = self.config.plugins.irc.channel
+        self.nickname = self.config.plugins.irc.nickname
         self.in_channel = False
         self.mq_consumers = []
 
@@ -110,10 +110,12 @@ class IrcProtocol(irc.IRCClient):
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
-        log.msg("IRC bot connected to '%s'" % (self.config['hostname']))
+        log.msg("IRC bot connected to '%s'"
+                    % (self.config.plugins.irc.hostname,))
 
     def connectionLost(self, reason):
-        log.msg("IRC bot disconnected from '%s'" % (self.config['hostname']))
+        log.msg("IRC bot disconnected from '%s'"
+                    % (self.config.plugins.irc.hostname,))
         irc.IRCClient.connectionLost(self, reason)
         self.end()
 

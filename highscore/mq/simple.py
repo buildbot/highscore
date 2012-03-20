@@ -25,7 +25,7 @@ class SimpleMQ(base.MQBase):
         self.config = config
         self.qrefs = []
         self.persistent_qrefs = {}
-        self.debug = config.get('debug')
+        self.debug = config.mq.get('debug')
 
     def produce(self, routing_key, data):
         if self.debug:

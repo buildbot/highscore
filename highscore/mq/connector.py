@@ -35,7 +35,7 @@ class MQConnector(service.MultiService):
 
         # imports are done locally so that we don't try to import
         # implementation-specific modules unless they're required.
-        typ = self.config.get('type', 'simple')
+        typ = self.config.mq.get('type', 'simple')
         assert typ in self.classes # this is checked by MasterConfig
         self.impl_type = typ
         cls = namedObject(self.classes[typ])

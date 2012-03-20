@@ -27,7 +27,7 @@ class DBConnector(service.MultiService):
         self.highscore = highscore
         self.config = config
 
-        db_url = config.get('url', 'sqlite:///highscore.sqlite')
+        db_url = config.db.get('url', 'sqlite:///highscore.sqlite')
         log.msg("Setting up database with URL %r" % (db_url,))
 
         # set up the engine and pool
