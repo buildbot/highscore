@@ -22,10 +22,32 @@ class Plugin(base.Plugin):
     def __init__(self, highscore, config):
         base.Plugin.__init__(self, highscore, config)
 
-        # turn on the listener and set it as our www attribute
+        self.mq_consumers = []
+
+        # turn on the listener and set it as our www attribute so it can get
+        # called from github - it will register itself
         self.listener = listener.GithubHookListener(self, highscore, config)
         self.listener.setServiceParent(self)
         self.www = self.listener.www
 
+        # set up the Github API for general use
         self.api = api.GithubApi(config.get('username'),
                                  config.get('password'))
+
+    def startService(self):
+        base.Plugin.startService(self)
+        cons = self.mq_consumers = []
+        cons.append(self.highscore.mq.consume(
+                self.mqCommitComment, 'github.event.commit_comment'))
+
+    def stopService(self):
+        for cons in self.mq_consumers:
+            cons.stop_consuming()
+        self.mq_consumers = []
+        return base.Plugin.stopService(self)
+
+    def mqCommitComment(self, key, message):
+        self.highscore.points.addPoints(
+                userid=message['userid'],
+                points=1,
+                comments='for a commit comment')
