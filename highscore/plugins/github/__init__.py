@@ -13,6 +13,7 @@
 #
 # Copyright Buildbot Team Members
 
+from twisted.python import log
 from highscore.plugins import base
 from highscore.plugins.github import listener
 from highscore.plugins.github import api
@@ -31,8 +32,11 @@ class Plugin(base.Plugin):
         self.www = self.listener.www
 
         # set up the Github API for general use
-        self.api = api.GithubApi(config.get('username'),
-                                 config.get('password'))
+        oauth2_token = config.get('oauth2_token')
+        if not oauth2_token:
+            log.msg('No oauth2_token specified; run get-github-token.py',
+                    system='github')
+        self.api = api.GithubApi(oauth2_token)
 
     def startService(self):
         base.Plugin.startService(self)

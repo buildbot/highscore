@@ -14,11 +14,9 @@
 # Copyright Buildbot Team Members
 
 import re
-import base64
 import json
 from twisted.python import log
-from twisted.application import service
-from twisted.internet import defer, ssl, reactor, task
+from twisted.internet import defer, ssl, reactor
 from twisted.web import client
 
 class GithubPageGetter(client.HTTPPageGetter):
@@ -42,18 +40,14 @@ class GithubApi(object):
 
     BASE_URL = 'https://api.github.com/'
 
-    def __init__(self, username=None, password=None):
-        self.username = username
-        self.password = password
+    def __init__(self, oauth2_token):
+        self.oauth2_token = oauth2_token
         self.rateLimitWarningIssued = False
         self.contextFactory = ssl.ClientContextFactory()
 
     def _makeHeaders(self):
-        if not self.username and not self.password:
-            return {}
-        raw = "%s:%s" % (self.username, self.password)
-        encoded = base64.b64encode(raw).strip()
-        return { 'Authorization' : 'Basic ' + encoded }
+        assert self.oauth2_token, "no token specified"
+        return { 'Authorization' : 'token ' + self.oauth2_token }
 
     def makeRequest(self, url_args, post=None, method='GET', page=0):
         headers = self._makeHeaders()
