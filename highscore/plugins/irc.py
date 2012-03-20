@@ -152,7 +152,7 @@ class IrcProtocol(irc.IRCClient):
 
     @defer.inlineCallbacks
     def handleMessage(self, nick, msg):
-        userid, name = self.getUserIdAndName(nick)
+        userid, name = yield self.getUserIdAndName(nick)
         self.highscore.mq.produce(
                 'irc.incoming',
                 dict(message=msg, nick=nick, display_name=name, userid=userid))
