@@ -8,6 +8,11 @@ h = Highscore(dict(
             hostname='chat.freenode.net',
             nickname='hallmonitor',
             channel='##buildbot',
+            announce=[
+                'points',
+                'leader',
+                'github.*',
+            ],
         )
     ),
     mq=dict(

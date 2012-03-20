@@ -97,8 +97,9 @@ class IrcProtocol(irc.IRCClient):
         cons = self.mq_consumers = []
         cons.append(self.highscore.mq.consume(
                 self.mqOutgoingMessage, 'irc.outgoing'))
-        cons.append(self.highscore.mq.consume(
-                self.mqPointsAwarded, 'points.add.*'))
+        for ann in self.config.plugins.irc.get('announce', []):
+            cons.append(self.highscore.mq.consume(
+                    self.mqAnnounce, 'announce.%s' % (ann,)))
 
     def end(self):
         # we're not connected anymore; end interactions
@@ -185,18 +186,5 @@ class IrcProtocol(irc.IRCClient):
     def mqOutgoingMessage(self, routing_key, data):
         self.msg(self.channel, data['message'])
 
-    def mqPointsAwarded(self, routing_key, data):
-        points = data['points']
-        if points == 0:
-            return
-        elif points > 0:
-            plural = 'point' if points == 1 else 'points'
-            msg = "%s gains %s %s %s" % (data['display_name'], points,
-                                         plural, data['comments'])
-        else:
-            points = -points
-            plural = 'point' if points == 1 else 'points'
-            msg = "%s loses %s %s %s" % (data['display_name'], points,
-                                         plural, data['comments'])
-        self.msg(self.channel, msg)
-
+    def mqAnnounce(self, routing_key, data):
+        self.msg(self.channel, data['message'])

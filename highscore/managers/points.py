@@ -43,10 +43,27 @@ class PointsManager(service.MultiService):
         id = yield self.highscore.db.pool.do(thd)
 
         display_name = yield self.highscore.users.getDisplayName(userid)
+
+        # notify about the points
         self.highscore.mq.produce('points.add.%d' % userid,
                 dict(pointsid=id, userid=userid,
                         display_name=display_name, points=points,
                         comments=comments))
+
+        # send an announcement
+        if points == 0:
+            return
+        elif points > 0:
+            plural = 'point' if points == 1 else 'points'
+            msg = "%s gains %s %s %s" % (display_name, points,
+                                         plural, comments)
+        else:
+            points = -points
+            plural = 'point' if points == 1 else 'points'
+            msg = "%s loses %s %s %s" % (display_name, points,
+                                         plural, comments)
+        self.highscore.mq.produce('announce.points',
+                dict(message=msg))
 
     def getUserPoints(self, userid):
         def thd(conn):
