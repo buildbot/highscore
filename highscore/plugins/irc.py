@@ -131,7 +131,7 @@ class IrcProtocol(irc.IRCClient):
         nick = user.split('!', 1)[0]
         if channel == self.nickname:
             # private message
-            self.msg(self.channel, "let's keep it in channel, k?")
+            self.msg(nick, "let's keep it in channel, k?")
             return
 
         if msg.startswith(self.nickname + ":"):
