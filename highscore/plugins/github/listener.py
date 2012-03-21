@@ -81,7 +81,8 @@ class GithubHookListener(service.Service):
         base_url = self.highscore.www.makeUrl('plugins', 'github')
 
         api = self.plugin.api
-        for monitored_repo in self.config.get('monitor_repos', []):
+        github_cfg = self.config.plugins.github
+        for monitored_repo in github_cfg.get('monitor_repos', []):
             repo_user, repo_name = monitored_repo
             all_hooks = yield api.repos.getHooks(repo_user, repo_name)
 
