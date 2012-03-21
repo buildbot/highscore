@@ -22,6 +22,7 @@ class Plugin(base.Plugin):
 
     def __init__(self, highscore, config):
         base.Plugin.__init__(self, highscore, config)
+        self.setName('plugins.github')
 
         self.mq_consumers = []
 
@@ -41,17 +42,154 @@ class Plugin(base.Plugin):
     def startService(self):
         base.Plugin.startService(self)
         cons = self.mq_consumers = []
-        cons.append(self.highscore.mq.consume(
-                self.mqCommitComment, 'github.event.commit_comment'))
+        prefix = 'mqHandle_'
+        for attrname in dir(self):
+            if not attrname.startswith(prefix):
+                continue
+            hook_type = attrname[len(prefix):]
+            method = getattr(self, attrname)
+            cons.append(self.highscore.mq.consume(
+                method, "github.event.%s" % (hook_type,)))
 
     def stopService(self):
-        for cons in self.mq_consumers:
+        consumers = self.mq_consumers
+        while consumers:
+            cons = consumers.pop()
             cons.stop_consuming()
-        self.mq_consumers = []
         return base.Plugin.stopService(self)
 
-    def mqCommitComment(self, key, message):
+    # handle messages by announcing them and awarding points
+
+    def _truncateText(self, text):
+        text = text.replace('\n', ' ')
+        if len(text) > 100:
+            text = text[:100] + '...'
+        return text
+
+    def _truncateSha1(self, text):
+        return text[:8]
+
+    def mqHandle_push(self, key, message):
+        truncText = self._truncateText
+        truncSha1 = self._truncateSha1
+
+        # announce
+        subs = {}
+        subs['commitMsg'] = truncText(
+                message['payload']['head_commit']['message'])
+        subs['commitSha1'] = truncSha1(message['payload']['head_commit']['id'])
+        subs['repoOwner'] = message['payload']['repository']['owner']['name']
+        subs['repoName'] = message['payload']['repository']['name']
+        subs['displayName'] = message['display_name']
+
+        annText = ("%(displayName)s pushed to "
+                   "%(repoOwner)s/%(repoName)s: %(commitMsg)s" % subs)
+        self.highscore.mq.produce('announce.github.push',
+                                  dict(message=annText))
+
+        # award points
         self.highscore.points.addPoints(
                 userid=message['userid'],
                 points=1,
-                comments='for a commit comment')
+                comments='for pushing %(commitSha1)s to '
+                         '%(repoOwner)s/%(repoName)s' % subs)
+
+    def mqHandle_issue_comment(self, key, message):
+        truncText = self._truncateText
+
+        # announce
+        subs = {}
+        issue = message['payload']['issue']
+        if issue.get('pull_request'):
+            subs['issueOrPull'] = 'pull request'
+        else:
+            subs['issueOrPull'] = 'issue'
+        subs['number'] = issue['number']
+        subs['comment'] = truncText(message['payload']['comment']['body'])
+        subs['displayName'] = message['display_name']
+
+        annText = ("%(displayName)s commented on (%(issueOrPull)s) "
+                   "#%(number)s: %(comment)s" % subs)
+        self.highscore.mq.produce('announce.github.issue_comment',
+                                  dict(message=annText))
+
+        # award points
+        self.highscore.points.addPoints(
+                userid=message['userid'],
+                points=1,
+                comments='for %(issueOrPull)s #%(number)s comment: '
+                         '%(comment)s' % subs)
+
+    actionGerunds = dict(
+            opened='opening', closed='closing', reopened='reopening')
+    def mqHandle_issues(self, key, message):
+        truncText = self._truncateText
+
+        # announce
+        subs = {}
+        issue = message['payload']['issue']
+        if issue.get('pull_request'):
+            subs['issueOrPull'] = 'pull request'
+        else:
+            subs['issueOrPull'] = 'issue'
+        subs['number'] = issue['number']
+        subs['title'] = truncText(message['payload']['issue']['title'])
+        subs['action'] = message['payload']['action']
+        subs['actioning'] = self.actionGerunds[subs['action']]
+        subs['displayName'] = message['display_name']
+
+        annText = ("%(displayName)s %(action)s (%(issueOrPull)s) "
+                   "#%(number)s: %(title)s" % subs)
+        self.highscore.mq.produce('announce.github.issues',
+                                  dict(message=annText))
+
+        # award points
+        self.highscore.points.addPoints(
+                userid=message['userid'],
+                points=1,
+                comments='for %(actioning)s %(issueOrPull)s #%(number)s: '
+                         '%(title)s' % subs)
+
+    def mqHandle_commit_comment(self, key, message):
+        truncText = self._truncateText
+
+        # announce
+        subs = {}
+        subs['comment'] = truncText(message['payload']['comment']['body'])
+        subs['commentUrl'] = message['payload']['comment']['html_url']
+        subs['displayName'] = message['display_name']
+
+        annText = ("%(displayName)s commented (%(commentUrl)s): %(comment)s"
+                    % subs)
+        self.highscore.mq.produce('announce.github.commit_comment',
+                                  dict(message=annText))
+
+        # award points
+        self.highscore.points.addPoints(
+                userid=message['userid'],
+                points=1,
+                comments='for commit comment %(commentUrl)s' % subs)
+
+    def mqHandle_pull_request(self, key, message):
+        truncText = self._truncateText
+
+        # announce
+        subs = {}
+        subs['number'] = message['payload']['number']
+        subs['title'] = truncText(message['payload']['issue']['title'])
+        subs['action'] = message['payload']['action']
+        subs['actioning'] = self.actionGerunds[subs['action']]
+        subs['displayName'] = message['display_name']
+
+        annText = ("%(displayName)s %(action)s (%(issueOrPull)s) "
+                   "#%(number)s: %(title)s" % subs)
+        self.highscore.mq.produce('announce.github.pull_request',
+                                  dict(message=annText))
+
+        # award points
+        self.highscore.points.addPoints(
+                userid=message['userid'],
+                points=1,
+                comments='for %(actioning)s %(issueOrPull)s #%(number)s: '
+                         '%(title)s' % subs)
+
