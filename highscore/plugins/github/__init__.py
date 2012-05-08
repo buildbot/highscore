@@ -13,6 +13,7 @@
 #
 # Copyright Buildbot Team Members
 
+import re
 from twisted.python import log
 from highscore.plugins import base
 from highscore.plugins.github import listener
@@ -60,8 +61,9 @@ class Plugin(base.Plugin):
 
     # handle messages by announcing them and awarding points
 
+    ws_re = re.compile(r'\s+')
     def _truncateText(self, text):
-        text = text.replace('\n', ' ')
+        text = self.ws_re.sub(' ', text)
         if len(text) > 100:
             text = text[:100] + '...'
         return text
@@ -176,7 +178,7 @@ class Plugin(base.Plugin):
         # announce
         subs = {}
         subs['number'] = message['payload']['number']
-        subs['title'] = truncText(message['payload']['issue']['title'])
+        subs['title'] = truncText(message['payload']['pull_request']['title'])
         subs['action'] = message['payload']['action']
         subs['actioning'] = self.actionGerunds[subs['action']]
         subs['displayName'] = message['display_name']
