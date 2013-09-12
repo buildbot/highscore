@@ -24,7 +24,7 @@ setup(
     packages=['highscore'],
     install_requires=[
         'twisted >= 11.0.0',
-        'sqlalchemy >= 0.7.2',
+        'sqlalchemy == 0.7.9',
         'sqlalchemy-migrate == 0.7.2',
         'pyopenssl',
     ],
