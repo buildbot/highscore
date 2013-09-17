@@ -27,5 +27,6 @@ setup(
         'sqlalchemy >= 0.6.0, <= 0.7.10',
         'sqlalchemy-migrate == 0.7.2',
         'pyopenssl',
+        'txgithub',
     ],
 )
