@@ -17,7 +17,7 @@ import re
 from twisted.python import log
 from highscore.plugins import base
 from highscore.plugins.github import listener
-from highscore.plugins.github import api
+from txgithub import api
 
 class Plugin(base.Plugin):
 
