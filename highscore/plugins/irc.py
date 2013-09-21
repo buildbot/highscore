@@ -150,7 +150,6 @@ class IrcProtocol(irc.IRCClient):
             d.addErrback(log.msg, "while adding points in response to IRC")
             return
 
-
     def msg(self, channel, message):
         # wrap message into utf-8 if necessary
         if isinstance(message, unicode):
