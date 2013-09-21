@@ -132,7 +132,11 @@ class IrcProtocol(irc.IRCClient):
         nick = user.split('!', 1)[0]
         if channel == self.nickname:
             # private message
-            self.msg(nick, "let's keep it in channel, k?")
+            #self.msg(nick, "let's keep it in channel, k?")
+            if msg.startswith('top_ten'):
+               self.showTopTen(nick)
+            else:
+               self.msg(nick, "let's keep it in channel, k?")
             return
 
         if msg.startswith(self.nickname + ":"):
@@ -146,6 +150,7 @@ class IrcProtocol(irc.IRCClient):
             d = self.addPoints(mo.group(1), 1, nick, mo.group(2))
             d.addErrback(log.msg, "while adding points in response to IRC")
             return
+
 
     def msg(self, channel, message):
         # wrap message into utf-8 if necessary
@@ -180,6 +185,45 @@ class IrcProtocol(irc.IRCClient):
                 yield self.getUserIdAndName(dest_nick)
         yield self.highscore.points.addPoints(userid=userid, points=points,
                                               comments=comments)
+
+    def showTopTen(self, nick):
+        def printData(data):
+            i = 0 
+            self.msg(nick, "Top Ten Buildbot Contributors")
+            for item in data:
+                i += 1
+                self.msg(nick, str(i) + "] " +
+                               item['display_name'] + " " +
+                               str(item['points']))
+            if (i < 10):
+               for j in range(11): 
+                   if j >= i:
+                      self.msg(nick, str(j) + "] ** empty **")
+
+        hs = self.highscore.points.getHighscores()
+        hs.addCallback(printData)
+
+    def showTopTenPublic(self):
+        def printData(data):
+            i = 0
+            msg = "Top Ten Buildbot Contributors"
+            self.highscore.mq.produce('announce.points',
+              dict(message=msg)) 
+            for item in data:
+                i += 1
+                msg = str(i) + "] " + item['display_name'] + " " + str(item['points'])
+                self.highscore.mq.produce('announce.points',
+                     dict(message=msg))
+            if i < 10:
+               for j in range(11):
+                   if j > i:
+                      msg = str(j) + "] ** empty **"
+                      self.highscore.mq.produce('announce.points',
+                         dict(message=msg))
+
+        hs = self.highscore.points.getHighscores()
+        hs.addCallback(printData)
+
 
     # handle messages from other systems
 
