@@ -18,16 +18,41 @@
   <meta name="viewport" content="width=device-width" />
 
   <!-- <link rel="stylesheet" href="%(root)s/css/style.css"> -->
+  <style>
+    @font-face {
+      font-family: "ArcadeClassic";
+      src: url("ArcadeClassic.ttf") format("truetype");
+    }
+
+    body {
+      font-family: "ArcadeClassic";
+      letter-spacing: 2px;
+      word-spacing: 0.5em;
+      background-color: black;
+      color: white;
+    }
+
+    td {
+      font-size: 40px;
+    }
+
+    table {
+      margin-left: auto;
+      margin-right: auto;
+      table-layout: fixed;
+    }
+  </style>
 
 </head>
 <body>
   <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you support IE 6.
        chromium.org/developers/how-tos/chrome-frame-getting-started -->
   <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
+  <h1 style="text-align: center; font-size: 80px;">Buildbot HighScore</h1>
   <header>
 
   </header>
-  <div id="main" t:render="main">
+  <div id="main_table" t:render="main_table">
   </div>
   <footer>
 

@@ -16,7 +16,7 @@
 import time
 from twisted.python import log, util
 from twisted.internet import defer
-from twisted.web import resource, server, template
+from twisted.web import resource, server, template, static
 
 class Resource(resource.Resource):
 
@@ -58,6 +58,7 @@ class Resource(resource.Resource):
 class HighscoresElement(template.Element):
 
     loader = template.XMLFile(util.sibpath(__file__, 'templates/page.xhtml'))
+    ttfFile = static.File('templates/ArcadeClassic.ttf')
 
     def __init__(self, highscore, scores):
         template.Element.__init__(self)
@@ -84,9 +85,51 @@ class HighscoresElement(template.Element):
             ul(li)
         return ul
 
+    def getPostSuffix(self, pos):
+        if pos == 1:
+           suffix = 'st'
+        elif pos == 2:
+           suffix = 'nd'
+        elif pos == 3:
+           suffix = 'rd'
+        else:
+           suffix = 'th'
+        return suffix
+
+    @template.renderer
+    def main_test(self, request, tag):
+        position = 0
+        output_list = []
+        for sc in self.scores:
+            position += 1
+            t = tag.clone()
+            poswsuffix = str(position)+self.getPostSuffix(position)
+            t.fillSlots(td_pos=poswsuffix, td_name=sc['display_name'],
+                        td_points=str(sc['points']))
+            output_list.append(t)
+            
+        return output_list
+
+    @template.renderer
+    def main_table(self, request, tag):
+        position = 0
+        table = template.tags.table()
+        rowlist = []
+        for sc in self.scores:
+            position += 1
+            td_pos = template.tags.td(str(position) + self.getPostSuffix(position))
+            td_name = template.tags.td(sc['display_name'])
+            td_points = template.tags.td(str(sc['points']))
+            tr = template.tags.tr(td_pos, td_name, td_points)
+            rowlist.append(tr)
+        return template.tags.table(rowlist) 
 
 class HighscoresResource(Resource):
 
+    def __init__(self, highscore):
+        Resource.__init__(self, highscore) 
+        self.putChild('ArcadeClassic.ttf', static.File('static/ArcadeClassic.ttf'))
+      
     @defer.inlineCallbacks
     def content(self, request):
         scores = yield self.highscore.points.getHighscores()
