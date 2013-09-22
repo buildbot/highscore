@@ -201,28 +201,6 @@ class IrcProtocol(irc.IRCClient):
         hs = self.highscore.points.getHighscores()
         hs.addCallback(printData)
 
-    def showTopTenPublic(self):
-        def printData(data):
-            i = 0
-            msg = "Top Ten Buildbot Contributors"
-            self.highscore.mq.produce('announce.points',
-              dict(message=msg)) 
-            for item in data:
-                i += 1
-                msg = str(i) + "] " + item['display_name'] + " " + str(item['points'])
-                self.highscore.mq.produce('announce.points',
-                     dict(message=msg))
-            if i < 10:
-               for j in range(11):
-                   if j > i:
-                      msg = str(j) + "] ** empty **"
-                      self.highscore.mq.produce('announce.points',
-                         dict(message=msg))
-
-        hs = self.highscore.points.getHighscores()
-        hs.addCallback(printData)
-
-
     # handle messages from other systems
 
     def mqOutgoingMessage(self, routing_key, data):
