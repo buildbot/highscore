@@ -186,6 +186,8 @@ class IrcProtocol(irc.IRCClient):
                                               comments=comments)
 
     def sendTopTen(self, nick):
+        hs = self.highscore.points.getHighscores()
+        @hs.addCallback
         def printData(data):
             i = 1 
             self.msg(nick, "Top Ten Buildbot Contributors")
@@ -198,9 +200,6 @@ class IrcProtocol(irc.IRCClient):
                for j in range(11): 
                    if j >= i:
                       self.msg(nick, str(j) + "] ** empty **")
-
-        hs = self.highscore.points.getHighscores()
-        hs.addCallback(printData)
 
     # handle messages from other systems
 
