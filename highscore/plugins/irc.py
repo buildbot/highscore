@@ -160,7 +160,7 @@ class IrcProtocol(irc.IRCClient):
     def publicMsg(self, msg):
         if isinstance(msg, unicode):
            msg = msg.encode('utf-8')
-        self.highscore.mq.produce('announce-poins',
+        self.highscore.mq.produce('announce-points',
                                   dict(message=msg))
 
     @defer.inlineCallbacks
