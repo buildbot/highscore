@@ -133,7 +133,7 @@ class IrcProtocol(irc.IRCClient):
         if channel == self.nickname:
             # private message
             if msg.startswith('top_ten'):
-               self.showTopTen(nick)
+               self.sendTopTen(nick)
             else:
                self.msg(nick, "let's keep it in channel, k?")
             return
@@ -184,7 +184,7 @@ class IrcProtocol(irc.IRCClient):
         yield self.highscore.points.addPoints(userid=userid, points=points,
                                               comments=comments)
 
-    def showTopTen(self, nick):
+    def sendTopTen(self, nick):
         def printData(data):
             i = 0 
             self.msg(nick, "Top Ten Buildbot Contributors")
