@@ -191,6 +191,24 @@ class IrcProtocol(irc.IRCClient):
         yield self.highscore.points.addPoints(userid=userid, points=points,
                                               comments=comments)
 
+    def posSuffixStr(self, pos):
+        if pos == 1:
+           posstr = 'st'
+        elif pos == 2:
+           posstr = 'nd'
+        elif pos == 3:
+           posstr = 'rd'
+        else:
+           posstr = 'th'
+
+        if pos < 10:
+           pref = ' '
+        else:
+           pref = ''
+ 
+        return pref + str(pos) + posstr
+    
+
     def sendTopTen(self, nick):
         hs = self.highscore.points.getHighscores()
         @hs.addCallback
@@ -198,17 +216,16 @@ class IrcProtocol(irc.IRCClient):
             i = 1 
             self.publicMsg("Top Ten Buildbot Contributors")
             for item in data:
-                self.publicMsg(str(i) + "] " +
+                self.publicMsg(self.posSuffixStr(i) + " " +
                                item['display_name'] + " " +
                                str(item['points']))
                 i += 1
             if i < 10:
                for j in range(11): 
                    if j >= i:
-                      self.publicMsg(str(j) + "] ** empty **")
+                      self.publicMsg(self.posSuffixStr(j) + " ** empty **")
 
     # handle messages from other systems
-
     def mqOutgoingMessage(self, routing_key, data):
         self.msg(self.channel, data['message'])
 
