@@ -157,6 +157,12 @@ class IrcProtocol(irc.IRCClient):
             message = message.encode('utf-8')
         irc.IRCClient.msg(self, channel, message)
 
+    def publicMsg(self, msg):
+        if isinstance(msg, unicode):
+           msg = msg.encode('utf-8')
+        self.highscore.mq.produce('announce-poins',
+                                  dict(message=msg))
+
     @defer.inlineCallbacks
     def handleMessage(self, nick, msg):
         userid, name = yield self.getUserIdAndName(nick)
@@ -190,16 +196,16 @@ class IrcProtocol(irc.IRCClient):
         @hs.addCallback
         def printData(data):
             i = 1 
-            self.msg(nick, "Top Ten Buildbot Contributors")
+            self.publicMsg("Top Ten Buildbot Contributors")
             for item in data:
-                self.msg(nick, str(i) + "] " +
+                self.publicMsg(str(i) + "] " +
                                item['display_name'] + " " +
                                str(item['points']))
                 i += 1
             if (i < 10):
                for j in range(11): 
                    if j >= i:
-                      self.msg(nick, str(j) + "] ** empty **")
+                      self.publicMsg(str(j) + "] ** empty **")
 
     # handle messages from other systems
 
