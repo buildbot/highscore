@@ -187,13 +187,13 @@ class IrcProtocol(irc.IRCClient):
 
     def sendTopTen(self, nick):
         def printData(data):
-            i = 0 
+            i = 1 
             self.msg(nick, "Top Ten Buildbot Contributors")
             for item in data:
-                i += 1
                 self.msg(nick, str(i) + "] " +
                                item['display_name'] + " " +
                                str(item['points']))
+                i += 1
             if (i < 10):
                for j in range(11): 
                    if j >= i:
