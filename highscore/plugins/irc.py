@@ -132,11 +132,12 @@ class IrcProtocol(irc.IRCClient):
         nick = user.split('!', 1)[0]
         if channel == self.nickname:
             # private message
-            if msg.startswith('top_ten'):
-               self.sendTopTen(nick)
-            else:
-               self.msg(nick, "let's keep it in channel, k?")
+            self.msg(nick, "let's keep it in channel, k?")
             return
+
+        if msg.startswith('top_ten'):
+           self.sendTopTen(nick)
+           return
 
         if msg.startswith(self.nickname + ":"):
             d = self.handleMessage(nick, msg[len(self.nickname)+1:].strip())
