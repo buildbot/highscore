@@ -202,7 +202,7 @@ class IrcProtocol(irc.IRCClient):
                                item['display_name'] + " " +
                                str(item['points']))
                 i += 1
-            if (i < 10):
+            if i < 10:
                for j in range(11): 
                    if j >= i:
                       self.publicMsg(str(j) + "] ** empty **")
