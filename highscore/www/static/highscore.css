@@ -8,6 +8,7 @@ body {
 
 td {
   font-size: 15px;
+  width: 150px;
 }
 
 .first {
@@ -20,6 +21,10 @@ td {
 
 .third {
   color: white;
+}
+
+.others {
+  color: grey;
 }
 
 .monthly {

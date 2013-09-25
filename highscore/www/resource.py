@@ -96,7 +96,6 @@ class HighscoresElement(template.Element):
         h3 = template.tags.h3('Lifetime', class_='lifetime')
         return h3
 
-
     @template.renderer
     def main_table(self, request, tag):
         position = 0
@@ -115,7 +114,7 @@ class HighscoresElement(template.Element):
                td_excl = template.tags.td(template.tags.i("!"*(4-position)))
             else:
                td_excl = template.tags.td("")
-            tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
+            tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
             rowlist.append(tr)
 
         if position < 10:
@@ -128,7 +127,7 @@ class HighscoresElement(template.Element):
                  td_points = template.tags.td('0',
                                            class_=self.getClassCol(j))
                  td_excl   = template.tags.td('')
-                 tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
+                 tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
                  rowlist.append(tr)
         return template.tags.table(rowlist) 
 
@@ -150,7 +149,7 @@ class HighscoresElement(template.Element):
                td_excl = template.tags.td(template.tags.i("!"*(4-position)))
             else:
                td_excl = template.tags.td("")
-            tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
+            tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
             rowlist.append(tr)
 
         if position < 10:
@@ -163,7 +162,7 @@ class HighscoresElement(template.Element):
                  td_points = template.tags.td('0',
                                             class_=self.getClassCol(j))
                  td_excl   = template.tags.td('')
-                 tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
+                 tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
                  rowlist.append(tr)
         return template.tags.table(rowlist) 
 
