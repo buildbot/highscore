@@ -78,7 +78,7 @@ class PointsManager(service.MultiService):
             def age_points(row):
                 mult = 0.5 ** ((now - row.when) / self.HALFLIFE)
                 return mult * row.points
-            return [ dict(when=row.when, points=age_points(row),
+            return [ dict(when=row.when, points=row.points,
                           comments=row.comments)
                      for row in r ]
         return self.highscore.db.pool.do(thd)
@@ -105,7 +105,7 @@ class PointsManager(service.MultiService):
                     user_names[row.userid] = row.display_name
                     user_points[row.userid] = 0
                 mult = 0.5 ** ((now - row.when) / self.HALFLIFE)
-                user_points[row.userid] += mult * row.points
+                user_points[row.userid] += row.points
 
             # sort highest scores
             by_score = sorted(
