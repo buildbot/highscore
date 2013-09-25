@@ -87,6 +87,17 @@ class HighscoresElement(template.Element):
                                class_="display_name", href=url)
 
     @template.renderer
+    def monthly_header(self, request, tag):
+        h3 = template.tags.h3('Monthly', class_='monthly')
+        return h3
+
+    @template.renderer
+    def lifetime_header(self, request, tag):
+        h3 = template.tags.h3('Lifetime', class_='lifetime')
+        return h3
+
+
+    @template.renderer
     def main_table(self, request, tag):
         position = 0
         table = template.tags.table(width='100%')

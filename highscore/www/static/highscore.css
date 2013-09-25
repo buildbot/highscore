@@ -22,6 +22,18 @@ td {
   color: white;
 }
 
+.monthly {
+  text-align: center;
+  font-size:  40px;
+  color: cyan; 
+}
+
+.lifetime {
+  text-align: center;
+  font-size: 40px;
+  color: pink;
+}
+
 table {
   width: 700px;
   margin-left: auto;
