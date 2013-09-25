@@ -113,7 +113,6 @@ class PointsManager(service.MultiService):
                 if row.userid not in user_names:
                     user_names[row.userid] = row.display_name
                     user_points[row.userid] = 0
-                mult = 0.5 ** ((now - row.when) / self.HALFLIFE)
                 user_points[row.userid] += row.points
 
             # sort highest scores
