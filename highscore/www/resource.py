@@ -79,6 +79,11 @@ class HighscoresElement(template.Element):
         colDict = {1: 'yellow', 2: 'red', 3: 'white'}
         return 'color: ' + colDict.get(position, 'grey') 
 
+    def toHref(self, row):
+        url = self.highscore.www.makeUrl('user', row['userid'])
+        return template.tags.a(row['display_name'],
+                               class_="display_name", href=url)
+
     @template.renderer
     def main_table(self, request, tag):
         position = 0
@@ -89,7 +94,7 @@ class HighscoresElement(template.Element):
  
             td_pos = template.tags.td(self.getPosStr(position),
                                       style=self.getStyleCol(position))
-            td_name = template.tags.td(sc['display_name'],
+            td_name = template.tags.td(self.toHref(sc),
                                        style=self.getStyleCol(position))
             td_points = template.tags.td(str(sc['points']),
                                        style=self.getStyleCol(position)+
@@ -142,7 +147,7 @@ class UsersPointsResource(Resource):
 
 class UserPointsElement(template.Element):
 
-    loader = template.XMLFile(util.sibpath(__file__, 'templates/page.xhtml'))
+    loader = template.XMLFile(util.sibpath(__file__, 'templates/ptspage.xhtml'))
 
     def __init__(self, highscore, display_name, points):
         template.Element.__init__(self)
@@ -155,7 +160,7 @@ class UserPointsElement(template.Element):
         return tag("Points for %s" % (self.display_name,))
 
     @template.renderer
-    def main(self, request, tag):
+    def main_table(self, request, tag):
         ul = template.tags.ul()
         tag(ul, class_='points')
         for pt in self.points:
