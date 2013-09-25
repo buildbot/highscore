@@ -58,7 +58,6 @@ class Resource(resource.Resource):
 class HighscoresElement(template.Element):
 
     loader = template.XMLFile(util.sibpath(__file__, 'templates/page.xhtml'))
-    ttfFile = static.File('templates/ArcadeClassic.ttf')
 
     def __init__(self, highscore, scores):
         template.Element.__init__(self)
@@ -102,7 +101,6 @@ class HighscoresResource(Resource):
         self.highscore = highscore
         self.putChild('ArcadeClassic.ttf',
                       static.File('static/ArcadeClassic.ttf'))
-        log.msg(self.children)
       
     @defer.inlineCallbacks
     def content(self, request):
