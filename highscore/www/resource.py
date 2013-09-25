@@ -77,9 +77,9 @@ class HighscoresElement(template.Element):
     def getPosStr(self, position):
         return str(position) + self.getPostSuffix(position)
 
-    def getStyleCol(self, position):
-        colDict = {1: 'yellow', 2: 'red', 3: 'white'}
-        return 'color: ' + colDict.get(position, 'grey') 
+    def getClassCol(self, position):
+        classDict = {1: 'first', 2: 'second', 3: 'third'}
+        return classDict.get(position, 'others') 
 
     def toHref(self, row):
         url = self.highscore.www.makeUrl('user', row['userid'])
@@ -95,12 +95,11 @@ class HighscoresElement(template.Element):
             position += 1
  
             td_pos = template.tags.td(self.getPosStr(position),
-                                      style=self.getStyleCol(position))
+                                      class_=self.getClassCol(position))
             td_name = template.tags.td(self.toHref(sc),
-                                       style=self.getStyleCol(position))
+                                      class_=self.getClassCol(position))
             td_points = template.tags.td(str(sc['points']),
-                                       style=self.getStyleCol(position)+
-                                        ';width: 100px;')
+                                      class_=self.getClassCol(position))
             if position <= 3:
                td_excl = template.tags.td(template.tags.i("!"*(4-position)))
             else:
@@ -112,11 +111,11 @@ class HighscoresElement(template.Element):
            for j in range(11):
               if j > position:
                  td_pos = template.tags.td(self.getPosStr(j),
-                                           style=self.getStyleCol(j))
+                                           class_=self.getClassCol(j))
                  td_name = template.tags.td('empty',
-                                            style=self.getStyleCol(j))
+                                           class_=self.getClassCol(j))
                  td_points = template.tags.td('0',
-                                            style=self.getStyleCol(j))
+                                           class_=self.getClassCol(j))
                  td_excl   = template.tags.td('')
                  tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
                  rowlist.append(tr)
@@ -131,12 +130,11 @@ class HighscoresElement(template.Element):
             position += 1
  
             td_pos = template.tags.td(self.getPosStr(position),
-                                      style=self.getStyleCol(position))
+                                      class_=self.getClassCol(position))
             td_name = template.tags.td(self.toHref(sc),
-                                       style=self.getStyleCol(position))
+                                       class_=self.getClassCol(position))
             td_points = template.tags.td(str(sc['ltpoints']),
-                                       style=self.getStyleCol(position)+
-                                        ';width: 100px;')
+                                       class_=self.getClassCol(position))
             if position <= 3:
                td_excl = template.tags.td(template.tags.i("!"*(4-position)))
             else:
@@ -148,11 +146,11 @@ class HighscoresElement(template.Element):
            for j in range(11):
               if j > position:
                  td_pos = template.tags.td(self.getPosStr(j),
-                                           style=self.getStyleCol(j))
+                                           class_=self.getClassCol(j))
                  td_name = template.tags.td('empty',
-                                            style=self.getStyleCol(j))
+                                            class_=self.getClassCol(j))
                  td_points = template.tags.td('0',
-                                            style=self.getStyleCol(j))
+                                            class_=self.getClassCol(j))
                  td_excl   = template.tags.td('')
                  tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
                  rowlist.append(tr)
@@ -162,7 +160,9 @@ class HighscoresResource(Resource):
 
     def __init__(self, highscore):
         Resource.__init__(self, highscore) 
+        self.putChild('css/highscore.css', static.File('static/highscore.css'))
         self.highscore = highscore
+        log.msg(self.children)
       
     @defer.inlineCallbacks
     def content(self, request):

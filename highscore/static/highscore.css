@@ -1,0 +1,30 @@
+body {
+  font-family: "Press Start 2P", cursive;
+  letter-spacing: 1px;
+  word-spacing: 0.5em;
+  background-color: black;
+  color: white;
+}
+
+td {
+  font-size: 15px;
+}
+
+.first {
+  color: yellow;
+}
+
+.second {
+  color: red;
+}
+
+.third {
+  color: white;
+}
+
+table {
+  width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  table-layout: fixed;
+}
