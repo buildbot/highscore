@@ -64,7 +64,6 @@ class HighscoresElement(template.Element):
         self.highscore = highscore
         self.scores = scores
         self.ltscores = ltscores
-        log.msg(ltscores)
 
     @template.renderer
     def title(self, request, tag):
