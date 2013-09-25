@@ -109,7 +109,7 @@ class HighscoresElement(template.Element):
                                        style=self.getStyleCol(position))
             td_points = template.tags.td(str(sc['points']),
                                        style=self.getStyleCol(position)+
-                                        ';width: 250px;')
+                                        ';width: 100px;')
             if position <= 3:
                td_excl = template.tags.td(template.tags.i("!"*(4-position)))
             else:
