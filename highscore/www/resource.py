@@ -70,25 +70,14 @@ class HighscoresElement(template.Element):
 
     def getPostSuffix(self, pos):
         posDict = {1 : 'st', 2: 'nd', 3: 'rd'}
-        if pos < 4:
-           suffix = posDict.get(pos)
-        else:
-           suffix = posDict.get(pos, 'th')
-        return suffix
+        return posDict.get(pos, 'th') 
 
     def getPosStr(self, position):
         return str(position) + self.getPostSuffix(position)
 
     def getStyleCol(self, position):
-        coldict = {1: 'yellow', 2: 'red', 3: 'white'}
-        stylecol = 'color:'
-
-        if position < 4:
-           stylecol += coldict.get(position)
-        else:
-           stylecol += 'grey'
-
-        return stylecol
+        colDict = {1: 'yellow', 2: 'red', 3: 'white'}
+        return 'color: ' + colDict.get(position, 'grey') 
 
     @template.renderer
     def main_table(self, request, tag):
