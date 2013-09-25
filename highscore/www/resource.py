@@ -69,22 +69,6 @@ class HighscoresElement(template.Element):
     def title(self, request, tag):
         return tag("High Scores")
 
-    @template.renderer
-    def main(self, request, tag):
-        ul = template.tags.ul()
-        tag(ul, class_='highscore')
-        for sc in self.scores:
-            li = template.tags.li()
-            url = self.highscore.www.makeUrl('user', sc['userid'])
-            li(template.tags.a(sc['display_name'],
-                                class_="display_name",
-                                href=url))
-            li(" ")
-            li(template.tags.span(str(round(0.5 + sc['points'])),
-                                    class_="points"))
-            ul(li)
-        return ul
-
     def getPostSuffix(self, pos):
         if pos == 1:
            suffix = 'st'
@@ -97,27 +81,14 @@ class HighscoresElement(template.Element):
         return suffix
 
     @template.renderer
-    def main_test(self, request, tag):
-        position = 0
-        output_list = []
-        for sc in self.scores:
-            position += 1
-            t = tag.clone()
-            poswsuffix = str(position)+self.getPostSuffix(position)
-            t.fillSlots(td_pos=poswsuffix, td_name=sc['display_name'],
-                        td_points=str(sc['points']))
-            output_list.append(t)
-            
-        return output_list
-
-    @template.renderer
     def main_table(self, request, tag):
         position = 0
         table = template.tags.table()
         rowlist = []
         for sc in self.scores:
             position += 1
-            td_pos = template.tags.td(str(position) + self.getPostSuffix(position))
+            posStr = str(position) + self.getPostSuffix(position)
+            td_pos = template.tags.td(posStr)
             td_name = template.tags.td(sc['display_name'])
             td_points = template.tags.td(str(sc['points']))
             tr = template.tags.tr(td_pos, td_name, td_points)
@@ -128,7 +99,10 @@ class HighscoresResource(Resource):
 
     def __init__(self, highscore):
         Resource.__init__(self, highscore) 
-        self.putChild('ArcadeClassic.ttf', static.File('static/ArcadeClassic.ttf'))
+        self.highscore = highscore
+        self.putChild('ArcadeClassic.ttf',
+                      static.File('static/ArcadeClassic.ttf'))
+        log.msg(self.children)
       
     @defer.inlineCallbacks
     def content(self, request):
