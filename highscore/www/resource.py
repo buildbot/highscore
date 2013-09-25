@@ -69,27 +69,22 @@ class HighscoresElement(template.Element):
         return tag("High Scores")
 
     def getPostSuffix(self, pos):
-        if pos == 1:
-           suffix = 'st'
-        elif pos == 2:
-           suffix = 'nd'
-        elif pos == 3:
-           suffix = 'rd'
+        posDict = {1 : 'st', 2: 'nd', 3: 'rd'}
+        if pos < 4:
+           suffix = posDict.get(pos)
         else:
-           suffix = 'th'
+           suffix = posDict.get(pos, 'th')
         return suffix
 
     def getPosStr(self, position):
         return str(position) + self.getPostSuffix(position)
 
     def getStyleCol(self, position):
+        coldict = {1: 'yellow', 2: 'red', 3: 'white'}
         stylecol = 'color:'
-        if position == 1:
-           stylecol += 'yellow'
-        elif position == 2:
-           stylecol += 'red'
-        elif position == 3:
-           stylecol += 'white'
+
+        if position < 4:
+           stylecol += coldict.get(position)
         else:
            stylecol += 'grey'
 
