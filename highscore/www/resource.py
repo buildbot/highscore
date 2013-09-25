@@ -160,9 +160,7 @@ class HighscoresResource(Resource):
 
     def __init__(self, highscore):
         Resource.__init__(self, highscore) 
-        self.putChild('static', static.File(util.sibpath(__file__, 'static')))
         self.highscore = highscore
-        log.msg(self.children)
       
     @defer.inlineCallbacks
     def content(self, request):
