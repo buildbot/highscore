@@ -45,3 +45,17 @@ table {
   margin-right: auto;
   table-layout: fixed;
 }
+
+.pos_col {
+   width: 100px;
+}
+
+.pts_col {
+   text-align: center;
+   width: 100px;
+}
+
+.name_col {
+   width: 200px;
+}
+

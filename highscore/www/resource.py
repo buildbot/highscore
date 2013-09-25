@@ -93,14 +93,22 @@ class HighscoresElement(template.Element):
 
     @template.renderer
     def lifetime_header(self, request, tag):
-        h3 = template.tags.h3('Lifetime', class_='lifetime')
+        h3 = template.tags.h3(template.tags.b('Lifetime'), class_='lifetime')
         return h3
+
+    def getTableHeader(self):
+        th_pos = template.tags.th('Pos.', class_='pos_col')
+        th_name = template.tags.th('Name', class_='name_col')
+        th_pts  = template.tags.th('Points', class_='pts_col')
+        tr = template.tags.tr(th_pos, th_name, th_pts, '')
+        return tr
 
     @template.renderer
     def main_table(self, request, tag):
         position = 0
         table = template.tags.table(width='100%')
         rowlist = []
+        rowlist.append(self.getTableHeader())
         for sc in self.scores:
             position += 1
  
@@ -136,6 +144,7 @@ class HighscoresElement(template.Element):
         position = 0
         table = template.tags.table(width='100%')
         rowlist = []
+        rowlist.append(self.getTableHeader())
         for sc in self.ltscores:
             position += 1
  
