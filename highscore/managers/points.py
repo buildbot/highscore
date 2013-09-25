@@ -33,12 +33,21 @@ class PointsManager(service.MultiService):
     def addPoints(self, userid, points, comments):
         def thd(conn):
             tbl = self.highscore.db.model.points
+            tbllt  = self.highscore.db.model.ltpoints
+            timeAdd = time.time()
             r = conn.execute(tbl.insert(), dict(
                 userid=userid,
-                when=time.time(),
+                when=timeAdd,
                 points=points,
                 comments=comments))
             id = r.inserted_primary_key[0]
+            r2 = conn.execute(tbllt.insert(), dict(
+                 userid=userid,
+                 when=timeAdd,
+                 points=points,
+                 comments=comments))
+            id2 = r2.inserted_primary_key[0]
+                  
             return id
         id = yield self.highscore.db.pool.do(thd)
 
@@ -112,6 +121,40 @@ class PointsManager(service.MultiService):
                     [ (p, u) for (u, p) in user_points.iteritems() ],
                     reverse=True)
             by_score = [ dict(points=p, userid=u, display_name=user_names[u])
+                         for (p, u) in by_score ]
+
+            return by_score
+        return self.highscore.db.pool.do(thd)
+
+    def getLTHighscores(self):
+        def thd(conn):
+            ltpointsTbl = self.highscore.db.model.ltpoints
+            usersTbl = self.highscore.db.model.users
+
+            now = time.time()
+
+            # we want to use exponential decay of points, and sqlite doesn't
+            # support this, so we just download the whole list of (recent)
+            # points, sorted by userid, and futz with it in memory from there
+            r = conn.execute(sa.select([ usersTbl.c.display_name,
+                    ltpointsTbl.c.userid, ltpointsTbl.c.when,
+                    ltpointsTbl.c.points ],
+                (usersTbl.c.id == ltpointsTbl.c.userid) &
+                (ltpointsTbl.c.when > now - self.MAX_AGE)))
+
+            user_ltpoints = {}
+            user_names = {}
+            for row in r:
+                if row.userid not in user_names:
+                    user_names[row.userid] = row.display_name
+                    user_ltpoints[row.userid] = 0
+                user_ltpoints[row.userid] += row.points
+
+            # sort highest scores
+            by_score = sorted(
+                    [ (p, u) for (u, p) in user_ltpoints.iteritems() ],
+                    reverse=True)
+            by_score = [ dict(ltpoints=p, userid=u, display_name=user_names[u])
                          for (p, u) in by_score ]
 
             return by_score

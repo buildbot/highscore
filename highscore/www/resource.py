@@ -59,10 +59,12 @@ class HighscoresElement(template.Element):
 
     loader = template.XMLFile(util.sibpath(__file__, 'templates/page.xhtml'))
 
-    def __init__(self, highscore, scores):
+    def __init__(self, highscore, scores, ltscores):
         template.Element.__init__(self)
         self.highscore = highscore
         self.scores = scores
+        self.ltscores = ltscores
+        log.msg(ltscores)
 
     @template.renderer
     def title(self, request, tag):
@@ -120,6 +122,42 @@ class HighscoresElement(template.Element):
                  rowlist.append(tr)
         return template.tags.table(rowlist) 
 
+    @template.renderer
+    def lt_table(self, request, tag):
+        position = 0
+        table = template.tags.table(width='100%')
+        rowlist = []
+        for sc in self.ltscores:
+            position += 1
+ 
+            td_pos = template.tags.td(self.getPosStr(position),
+                                      style=self.getStyleCol(position))
+            td_name = template.tags.td(self.toHref(sc),
+                                       style=self.getStyleCol(position))
+            td_points = template.tags.td(str(sc['ltpoints']),
+                                       style=self.getStyleCol(position)+
+                                        ';width: 100px;')
+            if position <= 3:
+               td_excl = template.tags.td(template.tags.i("!"*(4-position)))
+            else:
+               td_excl = template.tags.td("")
+            tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
+            rowlist.append(tr)
+
+        if position < 10:
+           for j in range(11):
+              if j > position:
+                 td_pos = template.tags.td(self.getPosStr(j),
+                                           style=self.getStyleCol(j))
+                 td_name = template.tags.td('empty',
+                                            style=self.getStyleCol(j))
+                 td_points = template.tags.td('0',
+                                            style=self.getStyleCol(j))
+                 td_excl   = template.tags.td('')
+                 tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
+                 rowlist.append(tr)
+        return template.tags.table(rowlist) 
+
 class HighscoresResource(Resource):
 
     def __init__(self, highscore):
@@ -129,10 +167,12 @@ class HighscoresResource(Resource):
     @defer.inlineCallbacks
     def content(self, request):
         scores = yield self.highscore.points.getHighscores()
+        ltscores = yield self.highscore.points.getLTHighscores()
 
         request.write('<!doctype html>\n')
         defer.returnValue((yield template.flattenString(request,
-                                HighscoresElement(self.highscore, scores))))
+                                HighscoresElement(self.highscore, scores,
+                                                  ltscores))))
 
 
 class UsersPointsResource(Resource):
