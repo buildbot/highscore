@@ -106,8 +106,10 @@ class HighscoresElement(template.Element):
               if j > position:
                  td_pos = template.tags.td(self.getPosStr(j),
                                            style=self.getStyleCol(j))
-                 td_name = template.tags.td('empty')
-                 td_points = template.tags.td('0')
+                 td_name = template.tags.td('empty',
+                                            style=self.getStyleCol(j))
+                 td_points = template.tags.td('0',
+                                            style=self.getStyleCol(j))
                  td_excl   = template.tags.td('')
                  tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
                  rowlist.append(tr)
