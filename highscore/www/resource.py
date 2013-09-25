@@ -82,15 +82,29 @@ class HighscoresElement(template.Element):
     @template.renderer
     def main_table(self, request, tag):
         position = 0
-        table = template.tags.table()
+        table = template.tags.table(width='100%')
         rowlist = []
         for sc in self.scores:
             position += 1
             posStr = str(position) + self.getPostSuffix(position)
-            td_pos = template.tags.td(posStr)
-            td_name = template.tags.td(sc['display_name'])
-            td_points = template.tags.td(str(sc['points']))
-            tr = template.tags.tr(td_pos, td_name, td_points)
+            stylecol = 'color:'
+            if position == 1:
+               stylecol += 'yellow'
+            elif position == 2:
+               stylecol += 'red'
+            elif position == 3:
+               stylecol += 'white'
+            else:
+               stylecol += 'grey'
+ 
+            td_pos = template.tags.td(posStr, style=stylecol)
+            td_name = template.tags.td(sc['display_name'], style=stylecol)
+            td_points = template.tags.td(str(sc['points']), style=stylecol)
+            if position <= 3:
+               td_excl = template.tags.td("!"*(4-position))
+            else:
+               td_excl = template.tags.td("")
+            tr = template.tags.tr(td_pos, td_name, td_points, td_excl)
             rowlist.append(tr)
         return template.tags.table(rowlist) 
 
@@ -99,8 +113,6 @@ class HighscoresResource(Resource):
     def __init__(self, highscore):
         Resource.__init__(self, highscore) 
         self.highscore = highscore
-        self.putChild('ArcadeClassic.ttf',
-                      static.File('static/ArcadeClassic.ttf'))
       
     @defer.inlineCallbacks
     def content(self, request):
