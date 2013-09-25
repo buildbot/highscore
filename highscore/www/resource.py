@@ -99,7 +99,7 @@ class HighscoresElement(template.Element):
  
             td_pos = template.tags.td(posStr, style=stylecol)
             td_name = template.tags.td(sc['display_name'], style=stylecol)
-            td_points = template.tags.td(str(sc['points']), style=stylecol)
+            td_points = template.tags.td(str(sc['points']), style=stylecol + ';width: 250px;')
             if position <= 3:
                td_excl = template.tags.td("!"*(4-position))
             else:
