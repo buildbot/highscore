@@ -91,7 +91,7 @@ class IrcProtocol(irc.IRCClient):
         # we're initialized; begin interacting
         if self.in_channel:
             return
-        log.msg("IRC bot joined to '%s'" % (self.channel,))
+        log.msg("IRC bot joined '%s'" % (self.channel,))
         self.highscore.mq.produce('irc.connected', {})
         self.in_channel = True
         cons = self.mq_consumers = []
