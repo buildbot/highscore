@@ -103,7 +103,7 @@ class HighscoresElement(template.Element):
         return tr
 
     @template.renderer
-    def main_table(self, request, tag):
+    def monthly_table(self, request, tag):
         position = 0
         table = template.tags.table(width='100%')
         rowlist = []
