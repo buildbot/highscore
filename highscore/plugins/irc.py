@@ -135,6 +135,10 @@ class IrcProtocol(irc.IRCClient):
             self.msg(nick, "let's keep it in channel, k?")
             return
 
+        if msg.startswith('top_ten'):
+           self.sendTopTen(nick)
+           return
+
         if msg.startswith(self.nickname + ":"):
             d = self.handleMessage(nick, msg[len(self.nickname)+1:].strip())
             d.addErrback(log.msg, "while handling incoming IRC message")
@@ -152,6 +156,12 @@ class IrcProtocol(irc.IRCClient):
         if isinstance(message, unicode):
             message = message.encode('utf-8')
         irc.IRCClient.msg(self, channel, message)
+
+    def publicMsg(self, msg):
+        if isinstance(msg, unicode):
+           msg = msg.encode('utf-8')
+        self.highscore.mq.produce('announce.points',
+                                  dict(message=msg))
 
     @defer.inlineCallbacks
     def handleMessage(self, nick, msg):
@@ -181,8 +191,40 @@ class IrcProtocol(irc.IRCClient):
         yield self.highscore.points.addPoints(userid=userid, points=points,
                                               comments=comments)
 
-    # handle messages from other systems
+    def posSuffixStr(self, pos):
+        if pos == 1:
+           posstr = 'st'
+        elif pos == 2:
+           posstr = 'nd'
+        elif pos == 3:
+           posstr = 'rd'
+        else:
+           posstr = 'th'
 
+        if pos < 10:
+           pref = ' '
+        else:
+           pref = ''
+ 
+        return pref + str(pos) + posstr
+    
+    def sendTopTen(self, nick):
+        d = self.highscore.points.getHighscores()
+        @d.addCallback
+        def printData(data):
+            i = 1 
+            self.publicMsg("Top Ten Buildbot Contributors")
+            for item in data:
+                self.publicMsg(self.posSuffixStr(i) + " " +
+                               item['display_name'] + " " +
+                               str(item['points']))
+                i += 1
+            if i < 10:
+               for j in range(11): 
+                   if j >= i:
+                      self.publicMsg(self.posSuffixStr(j) + " ** empty **")
+
+    # handle messages from other systems
     def mqOutgoingMessage(self, routing_key, data):
         self.msg(self.channel, data['message'])
 
