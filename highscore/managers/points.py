@@ -48,8 +48,7 @@ class PointsManager(service.MultiService):
                  comments=comments))
             id2 = r2.inserted_primary_key[0]
                   
-            return id
-        id = yield self.highscore.db.pool.do(thd)
+        yield self.highscore.db.pool.do(thd)
 
         display_name = yield self.highscore.users.getDisplayName(userid)
 
