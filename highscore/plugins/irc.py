@@ -208,10 +208,9 @@ class IrcProtocol(irc.IRCClient):
  
         return pref + str(pos) + posstr
     
-
     def sendTopTen(self, nick):
-        hs = self.highscore.points.getHighscores()
-        @hs.addCallback
+        d = self.highscore.points.getHighscores()
+        @d.addCallback
         def printData(data):
             i = 1 
             self.publicMsg("Top Ten Buildbot Contributors")
