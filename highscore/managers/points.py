@@ -99,9 +99,6 @@ class PointsManager(service.MultiService):
 
             now = time.time()
 
-            # we want to use exponential decay of points, and sqlite doesn't
-            # support this, so we just download the whole list of (recent)
-            # points, sorted by userid, and futz with it in memory from there
             r = conn.execute(sa.select([ usersTbl.c.display_name,
                     pointsTbl.c.userid, pointsTbl.c.when, pointsTbl.c.points ],
                 (usersTbl.c.id == pointsTbl.c.userid) &
@@ -132,9 +129,6 @@ class PointsManager(service.MultiService):
 
             now = time.time()
 
-            # we want to use exponential decay of points, and sqlite doesn't
-            # support this, so we just download the whole list of (recent)
-            # points, sorted by userid, and futz with it in memory from there
             r = conn.execute(sa.select([ usersTbl.c.display_name,
                     ltpointsTbl.c.userid, ltpointsTbl.c.when,
                     ltpointsTbl.c.points ],
