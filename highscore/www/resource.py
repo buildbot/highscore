@@ -139,7 +139,7 @@ class HighscoresElement(template.Element):
         return template.tags.table(rowlist) 
 
     @template.renderer
-    def lt_table(self, request, tag):
+    def lifetime_table(self, request, tag):
         position = 0
         table = template.tags.table(width='100%')
         rowlist = []
