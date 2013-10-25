@@ -109,4 +109,3 @@ class UsersManager(service.MultiService):
             else:
                 return '(unknown)'
         return self.highscore.db.pool.do(thd)
-
