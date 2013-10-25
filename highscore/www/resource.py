@@ -57,7 +57,7 @@ class Resource(resource.Resource):
 
 class HighscoresElement(template.Element):
 
-    loader = template.XMLFile(util.sibpath(__file__, 'templates/page.xhtml'))
+    loader = template.XMLFile(util.sibpath(__file__, 'templates/leaderboard.xhtml'))
 
     def __init__(self, highscore, scores, ltscores):
         template.Element.__init__(self)
@@ -203,7 +203,7 @@ class UsersPointsResource(Resource):
 
 class UserPointsElement(template.Element):
 
-    loader = template.XMLFile(util.sibpath(__file__, 'templates/ptspage.xhtml'))
+    loader = template.XMLFile(util.sibpath(__file__, 'templates/pointslist.xhtml'))
 
     def __init__(self, highscore, display_name, points):
         template.Element.__init__(self)
