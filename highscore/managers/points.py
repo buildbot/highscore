@@ -91,17 +91,25 @@ class PointsManager(service.MultiService):
                      for row in r ]
         return self.highscore.db.pool.do(thd)
 
-    def getHighscores(self):
+    def getHighscores(self, mode):
         def thd(conn):
             pointsTbl = self.highscore.db.model.points
             usersTbl = self.highscore.db.model.users
 
             now = time.time()
 
-            r = conn.execute(sa.select([ usersTbl.c.display_name,
-                    pointsTbl.c.userid, pointsTbl.c.when, pointsTbl.c.points ],
-                (usersTbl.c.id == pointsTbl.c.userid) &
-                (pointsTbl.c.when > now - self.MAX_AGE)))
+            if mode == MONTHLY_MODE:
+                r = conn.execute(sa.select([ usersTbl.c.display_name,
+                      pointsTbl.c.userid, pointsTbl.c.when,
+                      pointsTbl.c.points ],
+                      (usersTbl.c.id == pointsTbl.c.userid) &
+                      (pointsTbl.c.when <= now - self.HALFLIFE)))
+            else:
+                r = conn.execute(sa.select([ usersTbl.c.display_name,
+                      pointsTbl.c.userid, pointsTbl.c.when,
+                      pointsTbl.c.points ],
+                      (usersTbl.c.id == pointsTbl.c.userid) &
+                      (pointsTbl.c.when > 0)))
 
             user_points = {}
             user_names = {}
@@ -121,33 +129,3 @@ class PointsManager(service.MultiService):
             return by_score
         return self.highscore.db.pool.do(thd)
 
-    def getLTHighscores(self):
-        def thd(conn):
-            ltpointsTbl = self.highscore.db.model.ltpoints
-            usersTbl = self.highscore.db.model.users
-
-            now = time.time()
-
-            r = conn.execute(sa.select([ usersTbl.c.display_name,
-                    ltpointsTbl.c.userid, ltpointsTbl.c.when,
-                    ltpointsTbl.c.points ],
-                (usersTbl.c.id == ltpointsTbl.c.userid) &
-                (ltpointsTbl.c.when > now - self.MAX_AGE)))
-
-            user_ltpoints = {}
-            user_names = {}
-            for row in r:
-                if row.userid not in user_names:
-                    user_names[row.userid] = row.display_name
-                    user_ltpoints[row.userid] = 0
-                user_ltpoints[row.userid] += row.points
-
-            # sort highest scores
-            by_score = sorted(
-                    [ (p, u) for (u, p) in user_ltpoints.iteritems() ],
-                    reverse=True)
-            by_score = [ dict(ltpoints=p, userid=u, display_name=user_names[u])
-                         for (p, u) in by_score ]
-
-            return by_score
-        return self.highscore.db.pool.do(thd)

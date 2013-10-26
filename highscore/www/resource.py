@@ -182,8 +182,8 @@ class HighscoresResource(Resource):
       
     @defer.inlineCallbacks
     def content(self, request):
-        scores = yield self.highscore.points.getHighscores()
-        ltscores = yield self.highscore.points.getLTHighscores()
+        scores = yield self.highscore.points.getHighscores(MONTHLY_MODE)
+        ltscores = yield self.highscore.points.getHighscores(LONGTERM_MODE)
 
         request.write('<!doctype html>\n')
         defer.returnValue((yield template.flattenString(request,

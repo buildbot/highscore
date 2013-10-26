@@ -66,16 +66,6 @@ class Model(object):
     )
     sa.Index('points_userid', points.c.userid)
 
-    ltpoints = sa.Table('ltpoints', metadata,
-        sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('userid', sa.Integer, sa.ForeignKey('users.id')),
-        sa.Column('when', sa.Integer, nullable=False), # epoch time
-        sa.Column('points', sa.Integer, nullable=False),
-        sa.Column('comments', sa.String, nullable=False),
-    )
-    sa.Index('ltpoints_userid', points.c.userid)
- 
-
     # storage for arbitrary small state
     state = sa.Table('state', metadata,
         sa.Column('name', sa.String, primary_key=True),
