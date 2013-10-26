@@ -18,6 +18,8 @@ import sqlalchemy as sa
 from twisted.internet import defer
 from twisted.application import service
 
+from highscore.const import ConstMaster as const
+
 class PointsManager(service.MultiService):
 
     HALFLIFE = 3600*24*30 # points lose half their value after a month
@@ -91,7 +93,7 @@ class PointsManager(service.MultiService):
 
             now = time.time()
 
-            if mode == MONTHLY_MODE:
+            if mode == const.MONTHLY_MODE:
                 r = conn.execute(sa.select([ usersTbl.c.display_name,
                       pointsTbl.c.userid, pointsTbl.c.when,
                       pointsTbl.c.points ],

@@ -18,6 +18,8 @@ from twisted.python import log, util
 from twisted.internet import defer
 from twisted.web import resource, server, template, static
 
+from highscore.const import ConstMaster as const
+
 class Resource(resource.Resource):
 
     contentType = 'text/html'
@@ -182,8 +184,8 @@ class HighscoresResource(Resource):
       
     @defer.inlineCallbacks
     def content(self, request):
-        scores = yield self.highscore.points.getHighscores(MONTHLY_MODE)
-        ltscores = yield self.highscore.points.getHighscores(LONGTERM_MODE)
+        scores = yield self.highscore.points.getHighscores(const.MONTHLY_MODE)
+        ltscores = yield self.highscore.points.getHighscores(const.LONGTERM_MODE)
 
         request.write('<!doctype html>\n')
         defer.returnValue((yield template.flattenString(request,
