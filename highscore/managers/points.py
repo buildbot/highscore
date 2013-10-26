@@ -98,7 +98,7 @@ class PointsManager(service.MultiService):
                       pointsTbl.c.userid, pointsTbl.c.when,
                       pointsTbl.c.points ],
                       (usersTbl.c.id == pointsTbl.c.userid) &
-                      (pointsTbl.c.when <= now - self.HALFLIFE)))
+                      (now - pointsTbl.c.when <= self.HALFLIFE)))
             else:
                 r = conn.execute(sa.select([ usersTbl.c.display_name,
                       pointsTbl.c.userid, pointsTbl.c.when,
