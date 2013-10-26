@@ -33,7 +33,6 @@ class PointsManager(service.MultiService):
     def addPoints(self, userid, points, comments):
         def thd(conn):
             tbl = self.highscore.db.model.points
-            tbllt  = self.highscore.db.model.ltpoints
             timeAdd = time.time()
             r = conn.execute(tbl.insert(), dict(
                 userid=userid,
@@ -41,12 +40,6 @@ class PointsManager(service.MultiService):
                 points=points,
                 comments=comments))
             id = r.inserted_primary_key[0]
-            r2 = conn.execute(tbllt.insert(), dict(
-                 userid=userid,
-                 when=timeAdd,
-                 points=points,
-                 comments=comments))
-            id2 = r2.inserted_primary_key[0]
                   
         yield self.highscore.db.pool.do(thd)
 
