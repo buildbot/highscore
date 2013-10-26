@@ -151,7 +151,7 @@ class HighscoresElement(template.Element):
                                       class_=self.getClassCol(position))
             td_name = template.tags.td(self.toHref(sc),
                                        class_=self.getClassCol(position))
-            td_points = template.tags.td(str(sc['ltpoints']),
+            td_points = template.tags.td(str(sc['points']),
                                        class_=self.getClassCol(position))
             if position <= 3:
                td_excl = template.tags.td(template.tags.i("!"*(4-position)))
