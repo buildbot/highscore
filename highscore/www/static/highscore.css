@@ -1,0 +1,61 @@
+body {
+  font-family: "Press Start 2P", cursive;
+  letter-spacing: 1px;
+  word-spacing: 0.5em;
+  background-color: black;
+  color: white;
+}
+
+td {
+  font-size: 15px;
+  width: 150px;
+}
+
+.first {
+  color: yellow;
+}
+
+.second {
+  color: red;
+}
+
+.third {
+  color: white;
+}
+
+.others {
+  color: grey;
+}
+
+.monthly {
+  text-align: center;
+  font-size:  40px;
+  color: cyan; 
+}
+
+.ongoing {
+  text-align: center;
+  font-size: 40px;
+  color: pink;
+}
+
+table {
+  width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  table-layout: fixed;
+}
+
+.pos_col {
+   width: 100px;
+}
+
+.pts_col {
+   text-align: center;
+   width: 100px;
+}
+
+.name_col {
+   width: 200px;
+}
+

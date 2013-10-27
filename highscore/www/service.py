@@ -14,6 +14,7 @@
 # Copyright Buildbot Team Members
 
 import urllib
+from twisted.python import util
 from twisted.application import strports, service
 from twisted.web import server, static
 from highscore.www import resource
@@ -33,6 +34,7 @@ class WWWService(service.MultiService):
 
         self.root = root = static.Data('placeholder', 'text/plain')
         root.putChild('', resource.HighscoresResource(self.highscore))
+        root.putChild('static', static.File(util.sibpath(__file__, 'static')))
         root.putChild('user', resource.UsersPointsResource(self.highscore))
         root.putChild('plugins', resource.PluginsResource(self.highscore))
 
