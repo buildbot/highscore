@@ -93,8 +93,8 @@ class HighscoresElement(template.Element):
         return h3
 
     @template.renderer
-    def lifetime_header(self, request, tag):
-        h3 = template.tags.h3(template.tags.b('Lifetime'), class_='lifetime')
+    def ongoing_header(self, request, tag):
+        h3 = template.tags.h3(template.tags.b('Ongoing'), class_='ongoing')
         return h3
 
     def getTableHeader(self):
@@ -141,7 +141,7 @@ class HighscoresElement(template.Element):
         return template.tags.table(rowlist) 
 
     @template.renderer
-    def lifetime_table(self, request, tag):
+    def ongoing_table(self, request, tag):
         position = 0
         table = template.tags.table(width='100%')
         rowlist = []
