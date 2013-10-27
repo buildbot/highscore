@@ -93,8 +93,8 @@ class HighscoresElement(template.Element):
         return h3
 
     @template.renderer
-    def ongoing_header(self, request, tag):
-        h3 = template.tags.h3(template.tags.b('Ongoing'), class_='ongoing')
+    def career_header(self, request, tag):
+        h3 = template.tags.h3(template.tags.b('Career'), class_='career')
         return h3
 
     def getTableHeader(self):
@@ -141,7 +141,7 @@ class HighscoresElement(template.Element):
         return template.tags.table(rowlist) 
 
     @template.renderer
-    def ongoing_table(self, request, tag):
+    def career_table(self, request, tag):
         position = 0
         table = template.tags.table(width='100%')
         rowlist = []
