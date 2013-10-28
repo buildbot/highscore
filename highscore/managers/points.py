@@ -18,6 +18,8 @@ import sqlalchemy as sa
 from twisted.internet import defer
 from twisted.application import service
 
+from highscore.const import ConstMaster as const
+
 class PointsManager(service.MultiService):
 
     HALFLIFE = 3600*24*30 # points lose half their value after a month
@@ -33,14 +35,15 @@ class PointsManager(service.MultiService):
     def addPoints(self, userid, points, comments):
         def thd(conn):
             tbl = self.highscore.db.model.points
+            timeAdd = time.time()
             r = conn.execute(tbl.insert(), dict(
                 userid=userid,
-                when=time.time(),
+                when=timeAdd,
                 points=points,
                 comments=comments))
             id = r.inserted_primary_key[0]
-            return id
-        id = yield self.highscore.db.pool.do(thd)
+                  
+        yield self.highscore.db.pool.do(thd)
 
         display_name = yield self.highscore.users.getDisplayName(userid)
 
@@ -78,25 +81,30 @@ class PointsManager(service.MultiService):
             def age_points(row):
                 mult = 0.5 ** ((now - row.when) / self.HALFLIFE)
                 return mult * row.points
-            return [ dict(when=row.when, points=age_points(row),
+            return [ dict(when=row.when, points=row.points,
                           comments=row.comments)
                      for row in r ]
         return self.highscore.db.pool.do(thd)
 
-    def getHighscores(self):
+    def getHighscores(self, mode):
         def thd(conn):
             pointsTbl = self.highscore.db.model.points
             usersTbl = self.highscore.db.model.users
 
             now = time.time()
 
-            # we want to use exponential decay of points, and sqlite doesn't
-            # support this, so we just download the whole list of (recent)
-            # points, sorted by userid, and futz with it in memory from there
-            r = conn.execute(sa.select([ usersTbl.c.display_name,
-                    pointsTbl.c.userid, pointsTbl.c.when, pointsTbl.c.points ],
-                (usersTbl.c.id == pointsTbl.c.userid) &
-                (pointsTbl.c.when > now - self.MAX_AGE)))
+            if mode == const.MONTHLY_MODE:
+                r = conn.execute(sa.select([ usersTbl.c.display_name,
+                      pointsTbl.c.userid, pointsTbl.c.when,
+                      pointsTbl.c.points ],
+                      (usersTbl.c.id == pointsTbl.c.userid) &
+                      (now - pointsTbl.c.when <= self.HALFLIFE)))
+            else:
+                r = conn.execute(sa.select([ usersTbl.c.display_name,
+                      pointsTbl.c.userid, pointsTbl.c.when,
+                      pointsTbl.c.points ],
+                      (usersTbl.c.id == pointsTbl.c.userid) &
+                      (pointsTbl.c.when > 0)))
 
             user_points = {}
             user_names = {}
@@ -104,8 +112,7 @@ class PointsManager(service.MultiService):
                 if row.userid not in user_names:
                     user_names[row.userid] = row.display_name
                     user_points[row.userid] = 0
-                mult = 0.5 ** ((now - row.when) / self.HALFLIFE)
-                user_points[row.userid] += mult * row.points
+                user_points[row.userid] += row.points
 
             # sort highest scores
             by_score = sorted(
@@ -116,3 +123,4 @@ class PointsManager(service.MultiService):
 
             return by_score
         return self.highscore.db.pool.do(thd)
+
