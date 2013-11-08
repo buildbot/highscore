@@ -1,5 +1,6 @@
 from twisted.application import service
 from highscore.app import Highscore
+from highscore.local import MySQLConfig 
 
 application = service.Application('highscore')
 h = Highscore(dict(
@@ -14,6 +15,11 @@ h = Highscore(dict(
                 'github.*',
             ],
         )
+    ),
+    mysql=dict(
+          user=MySQLConfig.MYSQL_USER,
+          password=MySQLConfig.MYSQL_PASSWORD,
+          db_url="mysql://localhost/highscore",
     ),
     mq=dict(
         debug=True,
