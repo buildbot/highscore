@@ -27,18 +27,140 @@ class HighscoreEngineStrategy(strategies.ThreadLocalEngineStrategy):
 
     name = 'highscore'
 
+    def special_case_sqlite(self, u, kwargs):
+        """
+        For sqlite, percent-substitute %(basedir)s and use a full
+        path to the basedir.  If using a memory database, force the
+        pool size to be 1.
+        """
+        if u.database:
+           kwargs.setdefault('poolclass', NullPoll)
+           u.database = u.database % dict(basedir = kwargs['basedir'])
+           if not os.path.isabs(u.database[0]):
+               u.database = os.path.join(kwargs['basedir'], u.database)
+
+        if not u.database:
+            kwargs['pool_size'] = 1
+            max_conns = 1
+
+        if 'serialize_access' in u.query:
+            u.query.pop('serialize_access')
+            max_conns = 1
+
+        return u, kwargs, max_conns
+
+    def set_up_sqlite_engine(self, u, engine):
+        """
+        Special setup for sqlite engines
+        """
+        if u.database:
+           def connect_listener(connection, record):
+               connection.execute("pragma checkpoint_fullfsync = off")
+
+           if sautils.sa_version() < (0,7,0):
+              class CheckpointFullfsyncDisabler(object):
+                    pass
+              disabler = CheckpointFullfsyncDisabler()
+              disabler.connect = connect_listener
+              engine.pool.add_listener(disabler)
+           else:
+              sa.event.listen(engine.pool, 'connect', connect_listener)
+
+           log.msg("setting database journal mode to 'wal'")
+           try:
+               engine.execute("pragma journal_mode = wal")
+           except:
+               log.msg("failed to set journal mode - database may fail")
+
+    def special_case_mysql(self, u, kwargs):
+        """
+        For mysql, take max_idle out of the query arguments, and
+        use its value for pool_recycle.  Also, force use_unicode and
+        charset to be True and 'utf8', failing if they were set to
+        anything else.
+        """
+
+        kwargs['pool_recycle'] = int(u.query.pop('max_idle', 3600))
+
+        storage_engine = u.query.pop('storage_engine', 'MyISAM')
+        kwargs['connect_args'] = {
+              'init_command' : 'SET storage_engine=%s' % storage_engine,
+        }
+
+        if 'use_unicode' in u.query:
+            if u.query['use_unicode'] != "True":
+                raise TypeError("Buildbot requires use_unicode=True " +
+                                 "(and adds it automatically)")
+        else:
+            u.query['use_unicode'] = True
+
+        if 'charset' in u.query:
+            if u.query['charset'] != "utf8":
+                raise TypeError("Buildbot requires charset=utf8 " +
+                                 "(and adds it automatically)")
+        else:
+            u.query['charset'] = 'utf8'
+
+        return u, kwargs, None
+
+    def set_up_mysql_engine(self, u, engine):
+        """Special setup for mysql engines"""
+        # add the reconnecting PoolListener that will detect a
+        # disconnected connection and automatically start a new
+        # one.  This provides a measure of additional safety over
+        # the pool_recycle parameter, and is useful when e.g., the
+        # mysql server goes away
+        def checkout_listener(dbapi_con, con_record, con_proxy):
+            try:
+                cursor = dbapi_con.cursor()
+                cursor.execute("SELECT 1")
+            except dbapi_con.OperationalError, ex:
+                if ex.args[0] in (2006, 2013, 2014, 2045, 2055):
+                    # sqlalchemy will re-create the connection
+                    raise sa.exc.DisconnectionError()
+                raise
+
+        # older versions of sqlalchemy require the listener to be specified
+        # in the kwargs, in a class instance
+        if sautils.sa_version() < (0,7,0):
+            class ReconnectingListener(object):
+               pass
+            rcl = ReconnectingListener()
+            rcl.checkout = checkout_listener
+            engine.pool.add_listener(rcl)
+        else:
+            sa.event.listen(engine.pool, 'checkout', checkout_listener)
+
+
     def create(self, name_or_url, **kwargs):
+
+        if 'basedir' not in kwargs:
+           raise TypeError('no basedir supplied to create_engine')
+
         u = url.make_url(name_or_url)
+        if u.drivername.startswith('sqlite'):
+           u, kwargs, max_conns = self.special_case_sqlite(u, kwargs)
+        elif u.drivername.startswith('mysql'):
+           u, kwargs, max_conns = self.special_case_mysql(u, kwargs)
 
-        engine = strategies.ThreadLocalEngineStrategy.create(self,
-                                            u, **kwargs)
+        basedir = kwargs.pop('basedir')
 
-        log.msg("setting database journal mode to 'wal'")
-        try:
-            engine.execute("pragma journal_mode = wal")
-        except:
-            log.msg("failed to set journal mode - database may fail")
+        if max_conns is None:
+           max_conns = kwargs.get('pool_size', 5) + kwargs.get('max_overflow', 10)
+
+        engine = strategies.ThreadLocalEngineStrategy.create(slef, u, **kwargs)
+
+        engine.optimal_thread_pool_size = max_conns
+
+        engine.highscore_basedir = basedir
+
+        if u.drivername.startswith('sqlite'):
+           self.set_up_sqlite_engine(u, engine)
+        elif u.drivername.startswith('mysql'):
+           self.set_up_mysql_engine(u, engine)
+
         return engine
+
 
 HighscoreEngineStrategy()
 
