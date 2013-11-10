@@ -31,7 +31,8 @@ class DBConnector(service.MultiService):
         log.msg("Setting up database with URL %r" % (db_url,))
 
         # set up the engine and pool
-        self._engine = enginestrategy.create_engine(db_url)
+        self._engine = enginestrategy.create_engine(db_url,
+                              basedir=self.config.get('basedir'))
         self.model = model.Model(self)
         self.pool = pool.DBThreadPool(self._engine)
 

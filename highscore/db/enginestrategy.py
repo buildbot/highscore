@@ -16,6 +16,7 @@
 import sqlalchemy as sa
 from twisted.python import log
 from sqlalchemy.engine import strategies, url
+from highscore.util import sautils
 
 class HighscoreEngineStrategy(strategies.ThreadLocalEngineStrategy):
     # A subclass of the ThreadLocalEngineStrategy that can effectively interact
@@ -148,7 +149,7 @@ class HighscoreEngineStrategy(strategies.ThreadLocalEngineStrategy):
         if max_conns is None:
            max_conns = kwargs.get('pool_size', 5) + kwargs.get('max_overflow', 10)
 
-        engine = strategies.ThreadLocalEngineStrategy.create(slef, u, **kwargs)
+        engine = strategies.ThreadLocalEngineStrategy.create(self, u, **kwargs)
 
         engine.optimal_thread_pool_size = max_conns
 
