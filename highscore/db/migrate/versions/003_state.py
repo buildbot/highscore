@@ -20,7 +20,7 @@ def upgrade(migrate_engine):
     metadata.bind = migrate_engine
 
     state = sa.Table('state', metadata,
-        sa.Column('name', sa.String, primary_key=True),
-        sa.Column('value', sa.String, nullable=False),
+        sa.Column('name', sa.String(256), primary_key=True),
+        sa.Column('value', sa.String(256), nullable=False),
     )
     state.create()
