@@ -21,7 +21,7 @@ def upgrade(migrate_engine):
 
     users = sa.Table('users', metadata,
         sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('display_name', sa.String(1024), nullable=False),
+        sa.Column('display_name', sa.Text, nullable=False),
     )
     users.create()
 

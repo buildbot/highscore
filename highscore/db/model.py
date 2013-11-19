@@ -38,19 +38,19 @@ class Model(object):
 
     users = sa.Table('users', metadata,
         sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('display_name', sa.String, nullable=False),
+        sa.Column('display_name', sa.Text, nullable=False),
     )
 
     user_attr_types = sa.Table('user_attr_types', metadata,
         sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('type', sa.String, unique=True, nullable=False),
+        sa.Column('type', sa.String(256), unique=True, nullable=False),
     )
 
     users_info = sa.Table('users_info', metadata,
         sa.Column('userid', sa.Integer, sa.ForeignKey('users.id')),
         sa.Column('attrtypeid', sa.Integer,
                     sa.ForeignKey('user_attr_types.id')),
-        sa.Column('value', sa.String, nullable=False),
+        sa.Column('value', sa.String(256), nullable=False),
     )
     sa.Index('users_info_attr_value',
             users_info.c.attrtypeid,
@@ -62,14 +62,14 @@ class Model(object):
         sa.Column('userid', sa.Integer, sa.ForeignKey('users.id')),
         sa.Column('when', sa.Integer, nullable=False), # epoch time
         sa.Column('points', sa.Integer, nullable=False),
-        sa.Column('comments', sa.String, nullable=False),
+        sa.Column('comments', sa.Text, nullable=False),
     )
     sa.Index('points_userid', points.c.userid)
 
     # storage for arbitrary small state
     state = sa.Table('state', metadata,
-        sa.Column('name', sa.String, primary_key=True),
-        sa.Column('value', sa.String, nullable=False),
+        sa.Column('name', sa.Text, primary_key=True),
+        sa.Column('value', sa.Text, nullable=False),
     )
 
     #

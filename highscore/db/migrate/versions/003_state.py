@@ -21,6 +21,6 @@ def upgrade(migrate_engine):
 
     state = sa.Table('state', metadata,
         sa.Column('name', sa.String(256), primary_key=True),
-        sa.Column('value', sa.String(256), nullable=False),
+        sa.Column('value', sa.Text, nullable=False),
     )
     state.create()
