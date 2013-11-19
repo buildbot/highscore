@@ -17,10 +17,6 @@ h = Highscore(dict(
             ],
         )
     ),
-    db=dict(
-          url="mysql://%s:%s@localhost/highscore" %
-               (MySQLConfig.MYSQL_USER, MySQLConfig.MYSQL_PASSWORD),
-    ),
     mq=dict(
         debug=True,
     ),
