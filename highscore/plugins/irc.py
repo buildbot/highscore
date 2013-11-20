@@ -221,7 +221,7 @@ class IrcProtocol(irc.IRCClient):
                 i += 1
             if i < 10:
                 for j in range(11): 
-                   if j >= i:
+                    if j >= i:
                         self.publicMsg(self.posSuffixStr(j) + " ** empty **")
 
     # handle messages from other systems

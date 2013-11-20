@@ -129,15 +129,15 @@ class HighscoresElement(template.Element):
         if position < 10:
             for j in range(11):
                 if j > position:
-                   td_pos = template.tags.td(self.getPosStr(j),
+                    td_pos = template.tags.td(self.getPosStr(j),
                                            class_=self.getClassCol(j))
-                   td_name = template.tags.td('empty',
+                    td_name = template.tags.td('empty',
                                            class_=self.getClassCol(j))
-                   td_points = template.tags.td('0',
+                    td_points = template.tags.td('0',
                                            class_=self.getClassCol(j))
-                   td_excl   = template.tags.td('')
-                   tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
-                   rowlist.append(tr)
+                    td_excl   = template.tags.td('')
+                    tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
+                    rowlist.append(tr)
         return template.tags.table(rowlist) 
 
     @template.renderer
