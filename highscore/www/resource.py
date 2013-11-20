@@ -120,24 +120,24 @@ class HighscoresElement(template.Element):
             td_points = template.tags.td(str(sc['points']),
                                       class_=self.getClassCol(position))
             if position <= 3:
-               td_excl = template.tags.td(template.tags.i("!"*(4-position)))
+                td_excl = template.tags.td(template.tags.i("!"*(4-position)))
             else:
-               td_excl = template.tags.td("")
+                td_excl = template.tags.td("")
             tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
             rowlist.append(tr)
 
         if position < 10:
-           for j in range(11):
-              if j > position:
-                 td_pos = template.tags.td(self.getPosStr(j),
+            for j in range(11):
+                if j > position:
+                   td_pos = template.tags.td(self.getPosStr(j),
                                            class_=self.getClassCol(j))
-                 td_name = template.tags.td('empty',
+                   td_name = template.tags.td('empty',
                                            class_=self.getClassCol(j))
-                 td_points = template.tags.td('0',
+                   td_points = template.tags.td('0',
                                            class_=self.getClassCol(j))
-                 td_excl   = template.tags.td('')
-                 tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
-                 rowlist.append(tr)
+                   td_excl   = template.tags.td('')
+                   tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
+                   rowlist.append(tr)
         return template.tags.table(rowlist) 
 
     @template.renderer
@@ -156,24 +156,24 @@ class HighscoresElement(template.Element):
             td_points = template.tags.td(str(sc['points']),
                                        class_=self.getClassCol(position))
             if position <= 3:
-               td_excl = template.tags.td(template.tags.i("!"*(4-position)))
+                td_excl = template.tags.td(template.tags.i("!"*(4-position)))
             else:
-               td_excl = template.tags.td("")
+                td_excl = template.tags.td("")
             tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
             rowlist.append(tr)
 
         if position < 10:
-           for j in range(11):
-              if j > position:
-                 td_pos = template.tags.td(self.getPosStr(j),
+            for j in range(11):
+                if j > position:
+                    td_pos = template.tags.td(self.getPosStr(j),
                                            class_=self.getClassCol(j))
-                 td_name = template.tags.td('empty',
+                    td_name = template.tags.td('empty',
                                             class_=self.getClassCol(j))
-                 td_points = template.tags.td('0',
+                    td_points = template.tags.td('0',
                                             class_=self.getClassCol(j))
-                 td_excl   = template.tags.td('')
-                 tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
-                 rowlist.append(tr)
+                    td_excl   = template.tags.td('')
+                    tr = template.tags.tr("\n", td_pos, td_name, td_points, td_excl)
+                    rowlist.append(tr)
         return template.tags.table(rowlist) 
 
 class HighscoresResource(Resource):

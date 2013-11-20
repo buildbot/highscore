@@ -35,10 +35,10 @@ class HighscoreEngineStrategy(strategies.ThreadLocalEngineStrategy):
         pool size to be 1.
         """
         if u.database:
-           kwargs.setdefault('poolclass', NullPoll)
-           u.database = u.database % dict(basedir = kwargs['basedir'])
-           if not os.path.isabs(u.database[0]):
-               u.database = os.path.join(kwargs['basedir'], u.database)
+            kwargs.setdefault('poolclass', NullPoll)
+            u.database = u.database % dict(basedir = kwargs['basedir'])
+            if not os.path.isabs(u.database[0]):
+                u.database = os.path.join(kwargs['basedir'], u.database)
 
         if not u.database:
             kwargs['pool_size'] = 1
@@ -55,23 +55,23 @@ class HighscoreEngineStrategy(strategies.ThreadLocalEngineStrategy):
         Special setup for sqlite engines
         """
         if u.database:
-           def connect_listener(connection, record):
-               connection.execute("pragma checkpoint_fullfsync = off")
+            def connect_listener(connection, record):
+                connection.execute("pragma checkpoint_fullfsync = off")
 
-           if sautils.sa_version() < (0,7,0):
-              class CheckpointFullfsyncDisabler(object):
-                    pass
-              disabler = CheckpointFullfsyncDisabler()
-              disabler.connect = connect_listener
-              engine.pool.add_listener(disabler)
-           else:
-              sa.event.listen(engine.pool, 'connect', connect_listener)
+            if sautils.sa_version() < (0,7,0):
+                class CheckpointFullfsyncDisabler(object):
+                        pass
+                disabler = CheckpointFullfsyncDisabler()
+                disabler.connect = connect_listener
+                engine.pool.add_listener(disabler)
+            else:
+                sa.event.listen(engine.pool, 'connect', connect_listener)
 
-           log.msg("setting database journal mode to 'wal'")
-           try:
-               engine.execute("pragma journal_mode = wal")
-           except:
-               log.msg("failed to set journal mode - database may fail")
+            log.msg("setting database journal mode to 'wal'")
+            try:
+                engine.execute("pragma journal_mode = wal")
+            except:
+                log.msg("failed to set journal mode - database may fail")
 
     def special_case_mysql(self, u, kwargs):
         """
@@ -125,7 +125,7 @@ class HighscoreEngineStrategy(strategies.ThreadLocalEngineStrategy):
         # in the kwargs, in a class instance
         if sautils.sa_version() < (0,7,0):
             class ReconnectingListener(object):
-               pass
+                pass
             rcl = ReconnectingListener()
             rcl.checkout = checkout_listener
             engine.pool.add_listener(rcl)
@@ -136,18 +136,18 @@ class HighscoreEngineStrategy(strategies.ThreadLocalEngineStrategy):
     def create(self, name_or_url, **kwargs):
 
         if 'basedir' not in kwargs:
-           raise TypeError('no basedir supplied to create_engine')
+            raise TypeError('no basedir supplied to create_engine')
 
         u = url.make_url(name_or_url)
         if u.drivername.startswith('sqlite'):
-           u, kwargs, max_conns = self.special_case_sqlite(u, kwargs)
+            u, kwargs, max_conns = self.special_case_sqlite(u, kwargs)
         elif u.drivername.startswith('mysql'):
-           u, kwargs, max_conns = self.special_case_mysql(u, kwargs)
+            u, kwargs, max_conns = self.special_case_mysql(u, kwargs)
 
         basedir = kwargs.pop('basedir')
 
         if max_conns is None:
-           max_conns = kwargs.get('pool_size', 5) + kwargs.get('max_overflow', 10)
+            max_conns = kwargs.get('pool_size', 5) + kwargs.get('max_overflow', 10)
 
         engine = strategies.ThreadLocalEngineStrategy.create(self, u, **kwargs)
 
@@ -156,9 +156,9 @@ class HighscoreEngineStrategy(strategies.ThreadLocalEngineStrategy):
         engine.highscore_basedir = basedir
 
         if u.drivername.startswith('sqlite'):
-           self.set_up_sqlite_engine(u, engine)
+            self.set_up_sqlite_engine(u, engine)
         elif u.drivername.startswith('mysql'):
-           self.set_up_mysql_engine(u, engine)
+            self.set_up_mysql_engine(u, engine)
 
         return engine
 

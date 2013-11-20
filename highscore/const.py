@@ -16,6 +16,6 @@
 
 class ConstMaster(object):
 
-  MONTHLY_MODE  = 1
-  LONGTERM_MODE = 2
+    MONTHLY_MODE  = 1
+    LONGTERM_MODE = 2
 
