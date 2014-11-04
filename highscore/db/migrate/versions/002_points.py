@@ -21,7 +21,7 @@ def upgrade(migrate_engine):
 
     sa.Table('users', metadata,
         sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('display_name', sa.String, nullable=False),
+        sa.Column('display_name', sa.Text, nullable=False),
     )
 
     points = sa.Table('points', metadata,
@@ -29,7 +29,7 @@ def upgrade(migrate_engine):
         sa.Column('userid', sa.Integer, sa.ForeignKey('users.id')),
         sa.Column('when', sa.Integer, nullable=False),
         sa.Column('points', sa.Integer, nullable=False),
-        sa.Column('comments', sa.String, nullable=False),
+        sa.Column('comments', sa.Text, nullable=False),
     )
     points.create()
     sa.Index('points_userid', points.c.userid).create()

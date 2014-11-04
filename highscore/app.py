@@ -27,6 +27,7 @@ class Highscore(service.MultiService):
         service.MultiService.__init__(self)
         self.setName("highscore")
         self.config = Config(config)
+        self.basedir = config.get('basedir')
         self.is_set_up = False
 
     @defer.inlineCallbacks
@@ -34,7 +35,7 @@ class Highscore(service.MultiService):
         if self.is_set_up:
             return
         self.is_set_up = True
-
+        print self.config
         self.db = dbconnector.DBConnector(self, self.config)
         self.db.setServiceParent(self)
         yield self.db.setup()

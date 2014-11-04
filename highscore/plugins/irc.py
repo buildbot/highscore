@@ -136,8 +136,8 @@ class IrcProtocol(irc.IRCClient):
             return
 
         if msg.startswith('top_ten'):
-           self.sendTopTen(nick)
-           return
+            self.sendTopTen(nick)
+            return
 
         if msg.startswith(self.nickname + ":"):
             d = self.handleMessage(nick, msg[len(self.nickname)+1:].strip())
@@ -159,7 +159,7 @@ class IrcProtocol(irc.IRCClient):
 
     def publicMsg(self, msg):
         if isinstance(msg, unicode):
-           msg = msg.encode('utf-8')
+            msg = msg.encode('utf-8')
         self.highscore.mq.produce('announce.points',
                                   dict(message=msg))
 
@@ -193,18 +193,18 @@ class IrcProtocol(irc.IRCClient):
 
     def posSuffixStr(self, pos):
         if pos == 1:
-           posstr = 'st'
+            posstr = 'st'
         elif pos == 2:
-           posstr = 'nd'
+            posstr = 'nd'
         elif pos == 3:
-           posstr = 'rd'
+            posstr = 'rd'
         else:
-           posstr = 'th'
+            posstr = 'th'
 
         if pos < 10:
-           pref = ' '
+            pref = ' '
         else:
-           pref = ''
+            pref = ''
  
         return pref + str(pos) + posstr
     
@@ -220,9 +220,9 @@ class IrcProtocol(irc.IRCClient):
                                str(item['points']))
                 i += 1
             if i < 10:
-               for j in range(11): 
-                   if j >= i:
-                      self.publicMsg(self.posSuffixStr(j) + " ** empty **")
+                for j in range(11): 
+                    if j >= i:
+                        self.publicMsg(self.posSuffixStr(j) + " ** empty **")
 
     # handle messages from other systems
     def mqOutgoingMessage(self, routing_key, data):
